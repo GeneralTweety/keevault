@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kee Vault N</string>
+    <string name="title_activity_main">Kee Vault N</string>
+    <string name="package_name">pm.kee.vault</string>
+    <string name="fileprovider_authority">pm.kee.vault.fileprovider</string>
+    <string name="custom_url_scheme">pm.kee.vault</string>
+</resources>

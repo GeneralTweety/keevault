@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.4.5",
+    "@capacitor/android": "^1.1.0",
+    "@capacitor/cli": "^1.1.0",
+    "@capacitor/core": "^1.1.0",
     "backgrid": "^0.3.8",
     "bowser": "^2.4.0",
     "broadcast-channel": "^2.1.12",
@@ -51,6 +54,7 @@
     "grunt-contrib-uglify": "4.0.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-eslint": "21.0.0",
+    "grunt-exec": "^3.0.0",
     "grunt-gitinfo": "github:keeweb/grunt-gitinfo#b61aaed",
     "grunt-inline-alt": "github:keeweb/grunt-inline-alt#ec9f6ad",
     "grunt-postcss": "0.9.0",

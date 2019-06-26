@@ -14,6 +14,7 @@ module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
     grunt.loadNpmTasks('grunt-string-replace');
+    grunt.loadNpmTasks('grunt-exec');
 
     require('./grunt.tasks')(grunt);
     require('./grunt.entrypoints')(grunt);
@@ -89,6 +90,20 @@ module.exports = function(grunt) {
             'dist-sw': {
                 cwd: 'app/',
                 src: ['sw.js'],
+                dest: 'dist/',
+                expand: true,
+                nonull: true
+            },
+            'sw-loader': {
+                cwd: 'app/',
+                src: ['sw-loader.js'],
+                dest: 'tmp/',
+                expand: true,
+                nonull: true
+            },
+            'dist-sw-loader': {
+                cwd: 'app/',
+                src: ['sw-loader.js'],
                 dest: 'dist/',
                 expand: true,
                 nonull: true
@@ -192,6 +207,11 @@ module.exports = function(grunt) {
                 'watch:styles',
                 'webpack-dev-server'
             ]
+        },
+        exec: {
+            capCopy: {
+                cmd: 'npx cap copy'
+            }
         }
     });
 };
