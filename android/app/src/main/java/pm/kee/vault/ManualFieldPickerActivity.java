@@ -21,10 +21,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +34,6 @@ import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
-import pm.kee.vault.R;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.data.source.DefaultFieldTypesSource;
 import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
@@ -43,7 +42,7 @@ import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FilledAutofillField;
 import pm.kee.vault.util.AppExecutors;
 
-import static android.support.v7.widget.LinearLayoutManager.VERTICAL;
+import static androidx.recyclerview.widget.LinearLayoutManager.VERTICAL;
 
 public class ManualFieldPickerActivity extends AppCompatActivity {
     private static final String EXTRA_DATASET_ID = "extra_dataset_id";

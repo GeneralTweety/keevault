@@ -27,15 +27,14 @@ import android.service.autofill.FillRequest;
 import android.service.autofill.FillResponse;
 import android.service.autofill.SaveCallback;
 import android.service.autofill.SaveRequest;
-import android.support.annotation.NonNull;
-import android.view.autofill.AutofillManager;
+import androidx.annotation.NonNull;
+
 import android.widget.RemoteViews;
 
 import com.google.gson.GsonBuilder;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import pm.kee.vault.data.AutofillDataBuilder;
 import pm.kee.vault.data.ClientAutofillDataBuilder;

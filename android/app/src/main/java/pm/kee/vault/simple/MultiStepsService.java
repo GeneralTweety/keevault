@@ -17,32 +17,26 @@ package pm.kee.vault.simple;
 
 import android.app.assist.AssistStructure;
 import android.app.assist.AssistStructure.ViewNode;
-import android.content.Context;
-import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.service.autofill.AutofillService;
-import android.service.autofill.Dataset;
 import android.service.autofill.FillCallback;
 import android.service.autofill.FillRequest;
 import android.service.autofill.FillResponse;
 import android.service.autofill.SaveCallback;
 import android.service.autofill.SaveInfo;
 import android.service.autofill.SaveRequest;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 import android.view.autofill.AutofillId;
-import android.view.autofill.AutofillValue;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import static pm.kee.vault.simple.BasicService.getLatestAssistStructure;
 

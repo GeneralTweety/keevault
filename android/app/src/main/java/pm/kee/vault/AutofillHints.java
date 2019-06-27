@@ -15,19 +15,16 @@
  */
 package pm.kee.vault;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import pm.kee.vault.model.FakeData;
 import pm.kee.vault.model.FieldType;
 import pm.kee.vault.model.FieldTypeWithHeuristics;
-import pm.kee.vault.model.FilledAutofillField;
 
 import static java.util.stream.Collectors.toList;
 import static pm.kee.vault.util.Util.logd;

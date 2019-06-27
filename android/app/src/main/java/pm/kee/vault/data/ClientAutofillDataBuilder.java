@@ -17,7 +17,7 @@
 package pm.kee.vault.data;
 
 import android.app.assist.AssistStructure;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.View;
 import android.view.autofill.AutofillValue;
 
