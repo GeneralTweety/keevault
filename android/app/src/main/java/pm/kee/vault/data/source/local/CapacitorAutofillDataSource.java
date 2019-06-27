@@ -14,53 +14,54 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data.source.local;
+package pm.kee.vault.data.source.local;
 
 import android.content.SharedPreferences;
 import android.service.autofill.Dataset;
-
-import com.example.android.autofill.service.data.DataCallback;
-import com.example.android.autofill.service.data.source.AutofillDataSource;
-import com.example.android.autofill.service.model.AutofillDataset;
-import com.example.android.autofill.service.model.AutofillHint;
-import com.example.android.autofill.service.model.DatasetWithFilledAutofillFields;
-import com.example.android.autofill.service.model.FieldType;
-import com.example.android.autofill.service.model.FieldTypeWithHeuristics;
-import com.example.android.autofill.service.model.FilledAutofillField;
-import com.example.android.autofill.service.model.ResourceIdHeuristic;
-import com.example.android.autofill.service.util.AppExecutors;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.example.android.autofill.service.util.Util.logw;
+import pm.kee.vault.data.DataCallback;
+import pm.kee.vault.data.source.AutofillDataSource;
+import pm.kee.vault.data.source.local.dao.capDao;
+import pm.kee.vault.model.AutofillDataset;
+import pm.kee.vault.model.AutofillHint;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FieldType;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FilledAutofillField;
+import pm.kee.vault.model.ResourceIdHeuristic;
+import pm.kee.vault.util.AppExecutors;
 
-public class LocalAutofillDataSource implements AutofillDataSource {
+import static pm.kee.vault.util.Util.logw;
+
+public class CapacitorAutofillDataSource implements AutofillDataSource {
     public static final String SHARED_PREF_KEY = "com.example.android.autofill"
-            + ".service.datasource.LocalAutofillDataSource";
+            + ".service.datasource.CapacitorAutofillDataSource";
     private static final String DATASET_NUMBER_KEY = "datasetNumber";
     private static final Object sLock = new Object();
 
-    private static LocalAutofillDataSource sInstance;
+    private static CapacitorAutofillDataSource sInstance;
 
-    private final AutofillDao mAutofillDao;
     private final SharedPreferences mSharedPreferences;
     private final AppExecutors mAppExecutors;
+    private final capDao mCapDao;
 
-    private LocalAutofillDataSource(SharedPreferences sharedPreferences, AutofillDao autofillDao,
-            AppExecutors appExecutors) {
+    private CapacitorAutofillDataSource(SharedPreferences sharedPreferences, AppExecutors appExecutors
+    //TODO: Inject some sort of Capacitor data access layer object
+                                    ) {
         mSharedPreferences = sharedPreferences;
-        mAutofillDao = autofillDao;
         mAppExecutors = appExecutors;
+        mCapDao = new capDao();
     }
 
-    public static LocalAutofillDataSource getInstance(SharedPreferences sharedPreferences,
-            AutofillDao autofillDao, AppExecutors appExecutors) {
+    public static CapacitorAutofillDataSource getInstance(SharedPreferences sharedPreferences,
+            AppExecutors appExecutors) {
         synchronized (sLock) {
             if (sInstance == null) {
-                sInstance = new LocalAutofillDataSource(sharedPreferences, autofillDao,
-                        appExecutors);
+                sInstance = new CapacitorAutofillDataSource(sharedPreferences, appExecutors);
             }
             return sInstance;
         }
@@ -82,7 +83,7 @@ public class LocalAutofillDataSource implements AutofillDataSource {
                     .map(FieldType::getTypeName)
                     .collect(Collectors.toList());
             List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
-                    mAutofillDao.getDatasets(typeNames);
+                    mCapDao.getDatasets(typeNames);
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );
@@ -94,7 +95,7 @@ public class LocalAutofillDataSource implements AutofillDataSource {
             DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
         mAppExecutors.diskIO().execute(() -> {
             List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
-                    mAutofillDao.getAllDatasets();
+                    mCapDao.getAllDatasets();
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );
@@ -107,7 +108,7 @@ public class LocalAutofillDataSource implements AutofillDataSource {
         mAppExecutors.diskIO().execute(() -> {
             // Room does not support TypeConverters for collections.
             List<DatasetWithFilledAutofillFields> autofillDatasetFields =
-                    mAutofillDao.getDatasetsWithName(allAutofillHints, datasetName);
+                    mCapDao.getDatasetsWithName(allAutofillHints, datasetName);
             if (autofillDatasetFields != null && !autofillDatasetFields.isEmpty()) {
                 if (autofillDatasetFields.size() > 1) {
                     logw("More than 1 dataset with name %s", datasetName);
@@ -135,8 +136,8 @@ public class LocalAutofillDataSource implements AutofillDataSource {
                 List<FilledAutofillField> filledAutofillFields =
                         datasetWithFilledAutofillFields.filledAutofillFields;
                 AutofillDataset autofillDataset = datasetWithFilledAutofillFields.autofillDataset;
-                mAutofillDao.insertAutofillDataset(autofillDataset);
-                mAutofillDao.insertFilledAutofillFields(filledAutofillFields);
+                mCapDao.insertAutofillDataset(autofillDataset);
+                mCapDao.insertFilledAutofillFields(filledAutofillFields);
             }
         });
         incrementDatasetNumber();
@@ -145,14 +146,14 @@ public class LocalAutofillDataSource implements AutofillDataSource {
     @Override
     public void saveResourceIdHeuristic(ResourceIdHeuristic resourceIdHeuristic) {
         mAppExecutors.diskIO().execute(() -> {
-            mAutofillDao.insertResourceIdHeuristic(resourceIdHeuristic);
+            mCapDao.insertResourceIdHeuristic(resourceIdHeuristic);
         });
     }
 
     @Override
     public void getFieldTypes(DataCallback<List<FieldTypeWithHeuristics>> fieldTypesCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            List<FieldTypeWithHeuristics> fieldTypeWithHints = mAutofillDao.getFieldTypesWithHints();
+            List<FieldTypeWithHeuristics> fieldTypeWithHints = mCapDao.getFieldTypesWithHints();
             mAppExecutors.mainThread().execute(() -> {
                 if (fieldTypeWithHints != null) {
                     fieldTypesCallback.onLoaded(fieldTypeWithHints);
@@ -181,7 +182,7 @@ public class LocalAutofillDataSource implements AutofillDataSource {
     @Override
     public void getFilledAutofillField(String datasetId, String fieldTypeName, DataCallback<FilledAutofillField> fieldCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            FilledAutofillField filledAutofillField = mAutofillDao.getFilledAutofillField(datasetId, fieldTypeName);
+            FilledAutofillField filledAutofillField = mCapDao.getFilledAutofillField(datasetId, fieldTypeName);
             mAppExecutors.mainThread().execute(() -> {
                 fieldCallback.onLoaded(filledAutofillField);
             });
@@ -191,7 +192,7 @@ public class LocalAutofillDataSource implements AutofillDataSource {
     @Override
     public void getFieldType(String fieldTypeName, DataCallback<FieldType> fieldTypeCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            FieldType fieldType = mAutofillDao.getFieldType(fieldTypeName);
+            FieldType fieldType = mCapDao.getFieldType(fieldTypeName);
             mAppExecutors.mainThread().execute(() -> {
                 fieldTypeCallback.onLoaded(fieldType);
             });
@@ -202,7 +203,7 @@ public class LocalAutofillDataSource implements AutofillDataSource {
             DataCallback<DatasetWithFilledAutofillFields> callback) {
         mAppExecutors.diskIO().execute(() -> {
             DatasetWithFilledAutofillFields dataset =
-                    mAutofillDao.getAutofillDatasetWithId(datasetId);
+                    mCapDao.getAutofillDatasetWithId(datasetId);
             mAppExecutors.mainThread().execute(() -> {
                 callback.onLoaded(dataset);
             });
@@ -212,7 +213,7 @@ public class LocalAutofillDataSource implements AutofillDataSource {
     private HashMap<String, FieldTypeWithHeuristics> getFieldTypeByAutofillHints() {
         HashMap<String, FieldTypeWithHeuristics> hintMap = new HashMap<>();
         List<FieldTypeWithHeuristics> fieldTypeWithHints =
-                mAutofillDao.getFieldTypesWithHints();
+                mCapDao.getFieldTypesWithHints();
         if (fieldTypeWithHints != null) {
             for (FieldTypeWithHeuristics fieldType : fieldTypeWithHints) {
                 for (AutofillHint hint : fieldType.autofillHints) {
@@ -226,13 +227,13 @@ public class LocalAutofillDataSource implements AutofillDataSource {
     }
 
     private List<FieldTypeWithHeuristics> getFieldTypesForAutofillHints(List<String> autofillHints) {
-        return mAutofillDao.getFieldTypesForAutofillHints(autofillHints);
+        return mCapDao.getFieldTypesForAutofillHints(autofillHints);
     }
 
     @Override
     public void clear() {
         mAppExecutors.diskIO().execute(() -> {
-            mAutofillDao.clearAll();
+            mCapDao.clearAll();
             mSharedPreferences.edit().putInt(DATASET_NUMBER_KEY, 0).apply();
         });
     }

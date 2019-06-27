@@ -37,6 +37,8 @@ import android.widget.RemoteViews;
 
 import java.util.Map.Entry;
 
+import pm.kee.vault.R;
+
 /**
  * Activity used for autofill authentication, it simply sets the dataste upon tapping OK.
  */

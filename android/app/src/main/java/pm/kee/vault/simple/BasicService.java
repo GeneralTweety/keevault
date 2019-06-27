@@ -41,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import pm.kee.vault.MyAutofillService;
+import pm.kee.vault.R;
+
 /**
  * A very basic {@link AutofillService} implementation that only shows dynamic-generated datasets
  * and don't persist the saved data.

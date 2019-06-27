@@ -15,14 +15,15 @@
  */
 package pm.kee.vault.data.source;
 
-import com.example.android.autofill.service.data.DataCallback;
-import com.example.android.autofill.service.model.DatasetWithFilledAutofillFields;
-import com.example.android.autofill.service.model.FieldType;
-import com.example.android.autofill.service.model.FieldTypeWithHeuristics;
-import com.example.android.autofill.service.model.ResourceIdHeuristic;
-
 import java.util.HashMap;
 import java.util.List;
+
+import pm.kee.vault.data.DataCallback;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FieldType;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FilledAutofillField;
+import pm.kee.vault.model.ResourceIdHeuristic;
 
 public interface AutofillDataSource {
 
@@ -65,7 +66,7 @@ public interface AutofillDataSource {
     void getFieldTypeByAutofillHints(
             DataCallback<HashMap<String, FieldTypeWithHeuristics>> fieldTypeMapCallback);
 
-//    void getFilledAutofillField(String datasetId, String fieldTypeName, DataCallback<FilledAutofillField> fieldCallback);
+    void getFilledAutofillField(String datasetId, String fieldTypeName, DataCallback<FilledAutofillField> fieldCallback);
 
     /**
      * Clears all data.

@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data;
+package pm.kee.vault.data;
 
 import android.app.assist.AssistStructure;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.autofill.AutofillValue;
 
-import com.example.android.autofill.service.AutofillHints;
-import com.example.android.autofill.service.ClientParser;
-import com.example.android.autofill.service.model.AutofillDataset;
-import com.example.android.autofill.service.model.DatasetWithFilledAutofillFields;
-import com.example.android.autofill.service.model.FieldType;
-import com.example.android.autofill.service.model.FieldTypeWithHeuristics;
-import com.example.android.autofill.service.model.FilledAutofillField;
 import com.google.common.collect.ImmutableList;
 
 import java.util.HashMap;
@@ -36,7 +29,16 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import static com.example.android.autofill.service.util.Util.loge;
+import pm.kee.vault.AutofillHints;
+import pm.kee.vault.ClientParser;
+import pm.kee.vault.model.AutofillDataset;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FieldType;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FilledAutofillField;
+
+import static pm.kee.vault.util.Util.loge;
+
 
 public class ClientAutofillDataBuilder implements AutofillDataBuilder {
     private final ClientParser mClientParser;
@@ -128,24 +130,24 @@ public class ClientAutofillDataBuilder implements AutofillDataBuilder {
                 }
                     // Only add the field if the hint is supported by the type.
                 if (textValue != null) {
-                        if (!fieldType.getAutofillTypes().ints.contains(View.AUTOFILL_TYPE_TEXT)) {
+                        if (!fieldType.getAutofillTypes().contains(View.AUTOFILL_TYPE_TEXT)) {
                             loge("Text is invalid type for hint '%s'", hint);
                         }
                     }
                 if (autofillOptions != null && listIndex != null &&
                         autofillOptions.length > listIndex) {
-                    if (!fieldType.getAutofillTypes().ints.contains(View.AUTOFILL_TYPE_LIST)) {
+                    if (!fieldType.getAutofillTypes().contains(View.AUTOFILL_TYPE_LIST)) {
                         loge("List is invalid type for hint '%s'", hint);
                     }
                     textValue = autofillOptions[listIndex].toString();
                 }
                 if (dateValue != null) {
-                    if (!fieldType.getAutofillTypes().ints.contains(View.AUTOFILL_TYPE_DATE)) {
+                    if (!fieldType.getAutofillTypes().contains(View.AUTOFILL_TYPE_DATE)) {
                         loge("Date is invalid type for hint '%s'", hint);
                     }
                 }
                 if (toggleValue != null) {
-                    if (!fieldType.getAutofillTypes().ints.contains(View.AUTOFILL_TYPE_TOGGLE)) {
+                    if (!fieldType.getAutofillTypes().contains(View.AUTOFILL_TYPE_TOGGLE)) {
                         loge("Toggle is invalid type for hint '%s'", hint);
                     }
                 }

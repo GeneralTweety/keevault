@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data.source;
-
-import com.example.android.autofill.service.model.DefaultFieldTypeWithHints;
+package pm.kee.vault.data.source;
 
 import java.util.List;
+
+import pm.kee.vault.model.DefaultFieldTypeWithHints;
 
 public interface DefaultFieldTypesSource {
     List<DefaultFieldTypeWithHints> getDefaultFieldTypes();

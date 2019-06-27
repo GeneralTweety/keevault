@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data;
+package pm.kee.vault.data;
 
 
 import android.app.assist.AssistStructure;
 import android.util.MutableInt;
 import android.view.autofill.AutofillId;
 
-import com.example.android.autofill.service.ClientParser;
-import com.example.android.autofill.service.model.FieldType;
-import com.example.android.autofill.service.model.FieldTypeWithHeuristics;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.example.android.autofill.service.util.Util.logd;
+import pm.kee.vault.ClientParser;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+
+import static pm.kee.vault.util.Util.logd;
 
 public class ClientViewMetadataBuilder {
     private ClientParser mClientParser;

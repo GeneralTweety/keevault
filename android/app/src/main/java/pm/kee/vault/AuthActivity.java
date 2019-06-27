@@ -31,13 +31,31 @@ import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.google.gson.GsonBuilder;
+
 import java.util.HashMap;
 import java.util.List;
 
+import pm.kee.vault.data.ClientViewMetadata;
+import pm.kee.vault.data.ClientViewMetadataBuilder;
+import pm.kee.vault.data.DataCallback;
+import pm.kee.vault.data.adapter.DatasetAdapter;
+import pm.kee.vault.data.adapter.ResponseAdapter;
+import pm.kee.vault.data.source.DefaultFieldTypesSource;
+import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
+import pm.kee.vault.data.source.local.DefaultFieldTypesLocalJsonSource;
+import pm.kee.vault.data.source.local.DigitalAssetLinksRepository;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.util.AppExecutors;
+
 import static android.view.autofill.AutofillManager.EXTRA_ASSIST_STRUCTURE;
 import static android.view.autofill.AutofillManager.EXTRA_AUTHENTICATION_RESULT;
+import static pm.kee.vault.util.Util.EXTRA_DATASET_NAME;
+import static pm.kee.vault.util.Util.EXTRA_FOR_RESPONSE;
+import static pm.kee.vault.util.Util.logw;
 
-
+// TODO: Replace UI with calls to Capacitor in whatever way that is possible
 /**
  * This Activity controls the UI for logging in to the Autofill service.
  * It is launched when an Autofill Response or specific Dataset within the Response requires
@@ -48,7 +66,7 @@ public class AuthActivity extends AppCompatActivity {
     // Unique id for dataset intents.
     private static int sDatasetPendingIntentId = 0;
 
-    private LocalAutofillDataSource mLocalAutofillDataSource;
+    private CapacitorAutofillDataSource mCapacitorAutofillDataSource;
     private DigitalAssetLinksRepository mDalRepository;
     private EditText mMasterPassword;
     private DatasetAdapter mDatasetAdapter;
@@ -56,7 +74,6 @@ public class AuthActivity extends AppCompatActivity {
     private ClientViewMetadata mClientViewMetadata;
     private String mPackageName;
     private Intent mReplyIntent;
-    private MyPreferences mPreferences;
 
     public static IntentSender getAuthIntentSenderForResponse(Context context) {
         final Intent intent = new Intent(context, AuthActivity.class);
@@ -78,18 +95,17 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.multidataset_service_auth_activity);
         SharedPreferences sharedPreferences =
-                getSharedPreferences(LocalAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
+                getSharedPreferences(CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
         DefaultFieldTypesSource defaultFieldTypesSource =
                 DefaultFieldTypesLocalJsonSource.getInstance(getResources(),
                         new GsonBuilder().create());
-        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
-                defaultFieldTypesSource, new AppExecutors()).autofillDao();
-        mLocalAutofillDataSource = LocalAutofillDataSource.getInstance(sharedPreferences,
-                autofillDao, new AppExecutors());
+//        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
+//                defaultFieldTypesSource, new AppExecutors()).autofillDao();
+        mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(sharedPreferences,
+                new AppExecutors());
         mDalRepository = DigitalAssetLinksRepository.getInstance(getPackageManager());
         mMasterPassword = findViewById(R.id.master_password);
         mPackageName = getPackageName();
-        mPreferences = MyPreferences.getInstance(this);
         findViewById(R.id.login).setOnClickListener((view) -> login());
         findViewById(R.id.cancel).setOnClickListener((view) -> {
             onFailure();
@@ -99,7 +115,7 @@ public class AuthActivity extends AppCompatActivity {
 
     private void login() {
         Editable password = mMasterPassword.getText();
-        String correctPassword = MyPreferences.getInstance(AuthActivity.this).getMasterPassword();
+        String correctPassword = "whatever";
         if (password.toString().equals(correctPassword)) {
             onSuccess();
         } else {
@@ -129,7 +145,7 @@ public class AuthActivity extends AppCompatActivity {
         AssistStructure structure = intent.getParcelableExtra(EXTRA_ASSIST_STRUCTURE);
         ClientParser clientParser = new ClientParser(structure);
         mReplyIntent = new Intent();
-        mLocalAutofillDataSource.getFieldTypeByAutofillHints(
+        mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
                 new DataCallback<HashMap<String, FieldTypeWithHeuristics>>() {
             @Override
             public void onLoaded(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
@@ -156,7 +172,7 @@ public class AuthActivity extends AppCompatActivity {
 
     private void fetchDatasetAndSetIntent(
             HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint, String datasetName) {
-        mLocalAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
+        mCapacitorAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
                 datasetName, new DataCallback<DatasetWithFilledAutofillFields>() {
                     @Override
                     public void onLoaded(DatasetWithFilledAutofillFields dataset) {
@@ -178,11 +194,11 @@ public class AuthActivity extends AppCompatActivity {
 
     private void fetchAllDatasetsAndSetIntent(
             HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
-        mLocalAutofillDataSource.getAutofillDatasets(mClientViewMetadata.getAllHints(),
+        mCapacitorAutofillDataSource.getAutofillDatasets(mClientViewMetadata.getAllHints(),
                 new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                     @Override
                     public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
-                        boolean datasetAuth = mPreferences.isDatasetAuth();
+                        boolean datasetAuth = true;
                         FillResponse fillResponse = mResponseAdapter.buildResponse(
                                 fieldTypesByAutofillHint, datasets, datasetAuth);
                         setResponseIntent(fillResponse);

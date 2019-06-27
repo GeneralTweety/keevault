@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service;
+package pm.kee.vault;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -28,12 +28,15 @@ import android.service.autofill.Dataset;
 import android.service.autofill.FillResponse;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,10 +44,24 @@ import java.util.List;
 import java.util.UUID;
 
 import pm.kee.vault.R;
+import pm.kee.vault.data.ClientViewMetadata;
+import pm.kee.vault.data.ClientViewMetadataBuilder;
+import pm.kee.vault.data.DataCallback;
+import pm.kee.vault.data.adapter.DatasetAdapter;
+import pm.kee.vault.data.adapter.ResponseAdapter;
+import pm.kee.vault.data.source.DefaultFieldTypesSource;
+import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
+import pm.kee.vault.data.source.local.DefaultFieldTypesLocalJsonSource;
+import pm.kee.vault.model.AutofillDataset;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FieldType;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FilledAutofillField;
+import pm.kee.vault.util.AppExecutors;
 
-import static android.support.v7.widget.LinearLayoutManager.VERTICAL;
 import static android.view.autofill.AutofillManager.EXTRA_ASSIST_STRUCTURE;
 import static android.view.autofill.AutofillManager.EXTRA_AUTHENTICATION_RESULT;
+import static pm.kee.vault.util.Util.logd;
 
 /**
  * When the user long-presses on an autofillable field and selects "Autofill", this activity is
@@ -57,13 +74,12 @@ public class ManualActivity extends AppCompatActivity {
     // Unique id for dataset intents.
     private static int sDatasetPendingIntentId = 0;
 
-    private LocalAutofillDataSource mLocalAutofillDataSource;
+    private CapacitorAutofillDataSource mCapacitorAutofillDataSource;
     private DatasetAdapter mDatasetAdapter;
     private ResponseAdapter mResponseAdapter;
     private ClientViewMetadata mClientViewMetadata;
     private String mPackageName;
     private Intent mReplyIntent;
-    private MyPreferences mPreferences;
     private List<DatasetWithFilledAutofillFields> mAllDatasets;
     private RecyclerView mRecyclerView;
 
@@ -78,19 +94,16 @@ public class ManualActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.multidataset_service_manual_activity);
         SharedPreferences sharedPreferences =
-                getSharedPreferences(LocalAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
+                getSharedPreferences(CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
         DefaultFieldTypesSource defaultFieldTypesSource =
                 DefaultFieldTypesLocalJsonSource.getInstance(getResources(),
                         new GsonBuilder().create());
-        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
-                defaultFieldTypesSource, new AppExecutors()).autofillDao();
-        mLocalAutofillDataSource = LocalAutofillDataSource.getInstance(sharedPreferences,
-                autofillDao, new AppExecutors());
+        mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(sharedPreferences,
+                new AppExecutors());
         mPackageName = getPackageName();
-        mPreferences = MyPreferences.getInstance(this);
         mRecyclerView = findViewById(R.id.suggestionsList);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, VERTICAL));
-        mLocalAutofillDataSource.getAllAutofillDatasets(
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, RecyclerView.VERTICAL));
+        mCapacitorAutofillDataSource.getAllAutofillDatasets(
                 new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                     @Override
                     public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
@@ -149,7 +162,7 @@ public class ManualActivity extends AppCompatActivity {
         AssistStructure structure = intent.getParcelableExtra(EXTRA_ASSIST_STRUCTURE);
         ClientParser clientParser = new ClientParser(structure);
         mReplyIntent = new Intent();
-        mLocalAutofillDataSource.getFieldTypeByAutofillHints(
+        mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
                 new DataCallback<HashMap<String, FieldTypeWithHeuristics>>() {
                     @Override
                     public void onLoaded(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
@@ -181,10 +194,10 @@ public class ManualActivity extends AppCompatActivity {
         }
         String datasetId = data.getStringExtra(ManualFieldPickerActivity.EXTRA_SELECTED_FIELD_DATASET_ID);
         String fieldTypeName = data.getStringExtra(ManualFieldPickerActivity.EXTRA_SELECTED_FIELD_TYPE_NAME);
-        mLocalAutofillDataSource.getFilledAutofillField(datasetId, fieldTypeName, new DataCallback<FilledAutofillField>() {
+        mCapacitorAutofillDataSource.getFilledAutofillField(datasetId, fieldTypeName, new DataCallback<FilledAutofillField>() {
             @Override
             public void onLoaded(FilledAutofillField field) {
-                mLocalAutofillDataSource.getFieldType(field.getFieldTypeName(), new DataCallback<FieldType>() {
+                mCapacitorAutofillDataSource.getFieldType(field.getFieldTypeName(), new DataCallback<FieldType>() {
                     @Override
                     public void onLoaded(FieldType fieldType) {
                         onFieldSelected(field, fieldType);
@@ -207,7 +220,7 @@ public class ManualActivity extends AppCompatActivity {
 
     private void updateHeuristics() {
 //        TODO: update heuristics in data source; something like:
-//        mLocalAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
+//        mCapacitorAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
 //                datasetName, new DataCallback<DatasetWithFilledAutofillFields>() {
 //                    @Override
 //                    public void onLoaded(DatasetWithFilledAutofillFields dataset) {

@@ -14,44 +14,30 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.model;
+package pm.kee.vault.model;
 
-import android.arch.persistence.room.ColumnInfo;
-import android.arch.persistence.room.Entity;
-import android.support.annotation.NonNull;
-
-@Entity(primaryKeys = {"id"})
 public class AutofillDataset {
-    @NonNull
-    @ColumnInfo(name = "id")
     private final String mId;
 
-    @NonNull
-    @ColumnInfo(name = "datasetName")
     private final String mDatasetName;
 
-    @NonNull
-    @ColumnInfo(name = "packageName")
     private final String mPackageName;
 
-    public AutofillDataset(@NonNull String id, @NonNull String datasetName,
-                           @NonNull String packageName) {
+    public AutofillDataset(String id, String datasetName,
+                           String packageName) {
         mId = id;
         mDatasetName = datasetName;
         mPackageName = packageName;
     }
 
-    @NonNull
     public String getId() {
         return mId;
     }
 
-    @NonNull
     public String getDatasetName() {
         return mDatasetName;
     }
 
-    @NonNull
     public String getPackageName() {
         return mPackageName;
     }

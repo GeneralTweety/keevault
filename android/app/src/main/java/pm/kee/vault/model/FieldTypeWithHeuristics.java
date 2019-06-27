@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.model;
-
-import android.arch.persistence.room.Embedded;
-import android.arch.persistence.room.Relation;
+package pm.kee.vault.model;
 
 import java.util.List;
 
 public class FieldTypeWithHeuristics {
-    @Embedded
     public FieldType fieldType;
 
-    @Relation(parentColumn = "typeName", entityColumn = "fieldTypeName", entity = AutofillHint.class)
     public List<AutofillHint> autofillHints;
 
-    @Relation(parentColumn = "typeName", entityColumn = "fieldTypeName", entity = ResourceIdHeuristic.class)
     public List<ResourceIdHeuristic> resourceIdHeuristics;
 
     public FieldType getFieldType() {

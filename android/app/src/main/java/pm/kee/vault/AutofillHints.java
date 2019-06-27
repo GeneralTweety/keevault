@@ -24,6 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import pm.kee.vault.model.FakeData;
+import pm.kee.vault.model.FieldType;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FilledAutofillField;
+
 import static java.util.stream.Collectors.toList;
 import static pm.kee.vault.util.Util.logd;
 import static pm.kee.vault.util.Util.logw;
@@ -64,36 +69,36 @@ public final class AutofillHints {
 //        }
 //        return new FilledAutofillField(datasetId, fieldTypeName, text, date, toggle);
 //    }
-//
-//    public static String getFieldTypeNameFromAutofillHints(
-//            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
-//            @NonNull List<String> hints) {
-//        return getFieldTypeNameFromAutofillHints(fieldTypesByAutofillHint, hints, PARTITION_ALL);
-//    }
-//
-//    public static String getFieldTypeNameFromAutofillHints(
-//            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
-//            @NonNull List<String> hints, int partition) {
-//        List<String> fieldTypeNames = removePrefixes(hints)
-//                .stream()
-//                .filter(fieldTypesByAutofillHint::containsKey)
-//                .map(fieldTypesByAutofillHint::get)
-//                .filter(Objects::nonNull)
-//                .filter((fieldTypeWithHints) ->
-//                        matchesPartition(fieldTypeWithHints.fieldType.getPartition(), partition))
-//                .map(FieldTypeWithHeuristics::getFieldType).map(FieldType::getTypeName)
-//                .collect(toList());
-//        if (fieldTypeNames != null && fieldTypeNames.size() > 0) {
-//            return fieldTypeNames.get(0);
-//        } else {
-//            return null;
-//        }
-//    }
-//
-//    public static boolean matchesPartition(int partition, int otherPartition) {
-//        return partition == PARTITION_ALL || otherPartition == PARTITION_ALL ||
-//                partition == otherPartition;
-//    }
+
+    public static String getFieldTypeNameFromAutofillHints(
+            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+            @NonNull List<String> hints) {
+        return getFieldTypeNameFromAutofillHints(fieldTypesByAutofillHint, hints, PARTITION_ALL);
+    }
+
+    public static String getFieldTypeNameFromAutofillHints(
+            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+            @NonNull List<String> hints, int partition) {
+        List<String> fieldTypeNames = removePrefixes(hints)
+                .stream()
+                .filter(fieldTypesByAutofillHint::containsKey)
+                .map(fieldTypesByAutofillHint::get)
+                .filter(Objects::nonNull)
+                .filter((fieldTypeWithHints) ->
+                        matchesPartition(fieldTypeWithHints.fieldType.getPartition(), partition))
+                .map(FieldTypeWithHeuristics::getFieldType).map(FieldType::getTypeName)
+                .collect(toList());
+        if (fieldTypeNames != null && fieldTypeNames.size() > 0) {
+            return fieldTypeNames.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public static boolean matchesPartition(int partition, int otherPartition) {
+        return partition == PARTITION_ALL || otherPartition == PARTITION_ALL ||
+                partition == otherPartition;
+    }
 
     private static List<String> removePrefixes(@NonNull List<String> hints) {
         List<String> hintsWithoutPrefixes = new ArrayList<>();

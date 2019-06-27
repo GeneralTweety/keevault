@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data.adapter;
+package pm.kee.vault.data.adapter;
 
 import android.app.assist.AssistStructure;
 import android.content.IntentSender;
@@ -25,22 +25,22 @@ import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;
 import android.widget.RemoteViews;
 
-import com.example.android.autofill.service.AutofillHints;
-import com.example.android.autofill.service.ClientParser;
-import com.example.android.autofill.service.model.DatasetWithFilledAutofillFields;
-import com.example.android.autofill.service.model.FieldType;
-import com.example.android.autofill.service.model.FieldTypeWithHeuristics;
-import com.example.android.autofill.service.model.FilledAutofillField;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.example.android.autofill.service.util.Util.indexOf;
-import static com.example.android.autofill.service.util.Util.logv;
-import static com.example.android.autofill.service.util.Util.logw;
+import pm.kee.vault.AutofillHints;
+import pm.kee.vault.ClientParser;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FieldType;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FilledAutofillField;
+
 import static java.util.stream.Collectors.toMap;
+import static pm.kee.vault.util.Util.indexOf;
+import static pm.kee.vault.util.Util.logv;
+import static pm.kee.vault.util.Util.logw;
 
 public class DatasetAdapter {
     private final ClientParser mClientParser;
@@ -60,7 +60,7 @@ public class DatasetAdapter {
     }
 
     public Dataset buildDatasetForFocusedNode(FilledAutofillField filledAutofillField,
-            FieldType fieldType, RemoteViews remoteViews) {
+                                              FieldType fieldType, RemoteViews remoteViews) {
         Dataset.Builder datasetBuilder = new Dataset.Builder(remoteViews);
         boolean setAtLeastOneValue = bindDatasetToFocusedNode(filledAutofillField,
                 fieldType, datasetBuilder);

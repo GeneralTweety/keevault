@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static pm.kee.vault.simple.BasicService.getLatestAssistStructure;
+import static pm.kee.vault.simple.BasicService.newDatasetPresentation;
 
 /**
  * A basic service that provides autofill data for pretty much any input field, even those not

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.model;
+package pm.kee.vault.model;
+
+import java.util.List;
 
 public class FakeData {
-    public Converters.StringList strictExampleSet;
+    public List<String> strictExampleSet;
     public String textTemplate;
     public String dateTemplate;
 
-    public FakeData(Converters.StringList strictExampleSet, String textTemplate, String dateTemplate) {
+    public FakeData(List<String> strictExampleSet, String textTemplate, String dateTemplate) {
         this.strictExampleSet = strictExampleSet;
         this.textTemplate = textTemplate;
         this.dateTemplate = dateTemplate;

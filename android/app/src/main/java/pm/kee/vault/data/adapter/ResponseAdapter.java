@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data.adapter;
+package pm.kee.vault.data.adapter;
 
 import android.content.Context;
 import android.content.IntentSender;
@@ -24,16 +24,16 @@ import android.service.autofill.SaveInfo;
 import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
 
-import com.example.android.autofill.service.AuthActivity;
-import com.example.android.autofill.service.RemoteViewsHelper;
-import com.example.android.autofill.service.data.ClientViewMetadata;
-import com.example.android.autofill.service.model.DatasetWithFilledAutofillFields;
-import com.example.android.autofill.service.model.FieldType;
-import com.example.android.autofill.service.model.FieldTypeWithHeuristics;
-import com.example.android.autofill.service.model.FilledAutofillField;
-
 import java.util.HashMap;
 import java.util.List;
+
+import pm.kee.vault.AuthActivity;
+import pm.kee.vault.RemoteViewsHelper;
+import pm.kee.vault.data.ClientViewMetadata;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FieldType;
+import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FilledAutofillField;
 
 public class ResponseAdapter {
     private final Context mContext;
@@ -68,7 +68,7 @@ public class ResponseAdapter {
      * be sent back to the client View.
      */
     public FillResponse buildResponse(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
-            List<DatasetWithFilledAutofillFields> datasets, boolean datasetAuth) {
+                                      List<DatasetWithFilledAutofillFields> datasets, boolean datasetAuth) {
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
         if (datasets != null) {
             for (DatasetWithFilledAutofillFields datasetWithFilledAutofillFields : datasets) {

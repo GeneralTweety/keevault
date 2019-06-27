@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.autofill.service;
+package pm.kee.vault;
 
 import android.view.View;
-
-import com.example.android.autofill.service.model.FilledAutofillField;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import pm.kee.vault.model.FilledAutofillField;
 
 /**
  * Holds the properties associated with an autofill hint in this Autofill Service.

@@ -23,6 +23,7 @@ import com.google.common.net.InternetDomainName;
 
 import java.util.HashMap;
 
+import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.data.source.DalService;
 import pm.kee.vault.data.source.DigitalAssetLinksDataSource;
 import pm.kee.vault.model.DalCheck;
@@ -83,7 +84,7 @@ public class DigitalAssetLinksRepository implements DigitalAssetLinksDataSource 
     }
 
     public void checkValid(Util.DalCheckRequirement dalCheckRequirement, DalInfo dalInfo,
-                           com.example.android.autofill.service.data.DataCallback<DalCheck> dalCheckDataCallback) {
+                           DataCallback<DalCheck> dalCheckDataCallback) {
         if (dalCheckRequirement.equals(Disabled)) {
             DalCheck dalCheck = new DalCheck();
             dalCheck.linked = true;

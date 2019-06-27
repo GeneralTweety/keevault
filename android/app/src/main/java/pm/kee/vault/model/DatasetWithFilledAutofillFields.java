@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.model;
-
-import android.arch.persistence.room.Embedded;
-import android.arch.persistence.room.Relation;
+package pm.kee.vault.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DatasetWithFilledAutofillFields {
-    @Embedded
     public AutofillDataset autofillDataset;
 
-    @Relation(parentColumn = "id", entityColumn = "datasetId", entity = FilledAutofillField.class)
     public List<FilledAutofillField> filledAutofillFields;
 
     public void add(FilledAutofillField filledAutofillField) {

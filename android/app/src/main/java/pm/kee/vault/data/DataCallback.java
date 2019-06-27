@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data;
+package pm.kee.vault.data;
 
 public interface DataCallback<T> {
     void onLoaded(T object);

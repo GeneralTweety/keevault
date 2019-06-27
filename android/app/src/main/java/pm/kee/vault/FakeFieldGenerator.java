@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.autofill.service;
+package pm.kee.vault;
 
-import com.example.android.autofill.service.model.FilledAutofillField;
+import pm.kee.vault.model.FilledAutofillField;
 
 interface FakeFieldGenerator {
     FilledAutofillField generate(int seed, String datasetId);

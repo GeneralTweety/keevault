@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data;
-
-import com.example.android.autofill.service.model.DatasetWithFilledAutofillFields;
+package pm.kee.vault.data;
 
 import java.util.List;
+
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 
 public interface AutofillDataBuilder {
     List<DatasetWithFilledAutofillFields> buildDatasetsByPartition(int datasetNumber);

@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data.source.local;
+package pm.kee.vault.data.source.local;
 
 import android.content.res.Resources;
 
-import com.example.android.autofill.service.R;
-import com.example.android.autofill.service.data.source.DefaultFieldTypesSource;
-import com.example.android.autofill.service.model.DefaultFieldTypeWithHints;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -32,7 +29,11 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import static com.example.android.autofill.service.util.Util.loge;
+import pm.kee.vault.R;
+import pm.kee.vault.data.source.DefaultFieldTypesSource;
+import pm.kee.vault.model.DefaultFieldTypeWithHints;
+
+import static pm.kee.vault.util.Util.loge;
 
 public class DefaultFieldTypesLocalJsonSource implements DefaultFieldTypesSource {
     private static DefaultFieldTypesLocalJsonSource sInstance;

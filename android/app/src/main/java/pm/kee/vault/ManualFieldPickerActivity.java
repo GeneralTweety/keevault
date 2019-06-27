@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service;
+package pm.kee.vault;
 
 import android.app.Activity;
 import android.content.Context;
@@ -30,16 +30,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.android.autofill.service.data.DataCallback;
-import com.example.android.autofill.service.data.source.DefaultFieldTypesSource;
-import com.example.android.autofill.service.data.source.local.DefaultFieldTypesLocalJsonSource;
-import com.example.android.autofill.service.data.source.local.LocalAutofillDataSource;
-import com.example.android.autofill.service.model.DatasetWithFilledAutofillFields;
-import com.example.android.autofill.service.model.FilledAutofillField;
-import com.example.android.autofill.service.util.AppExecutors;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
+
+import pm.kee.vault.R;
+import pm.kee.vault.data.DataCallback;
+import pm.kee.vault.data.source.DefaultFieldTypesSource;
+import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
+import pm.kee.vault.data.source.local.DefaultFieldTypesLocalJsonSource;
+import pm.kee.vault.model.DatasetWithFilledAutofillFields;
+import pm.kee.vault.model.FilledAutofillField;
+import pm.kee.vault.util.AppExecutors;
 
 import static android.support.v7.widget.LinearLayoutManager.VERTICAL;
 
@@ -48,7 +50,7 @@ public class ManualFieldPickerActivity extends AppCompatActivity {
     public static final String EXTRA_SELECTED_FIELD_DATASET_ID = "selected_field_dataset_id";
     public static final String EXTRA_SELECTED_FIELD_TYPE_NAME = "selected_field_type_name";
 
-    private LocalAutofillDataSource mLocalAutofillDataSource;
+    private CapacitorAutofillDataSource mCapacitorAutofillDataSource;
 
     private RecyclerView mRecyclerView;
     private TextView mListTitle;
@@ -65,19 +67,16 @@ public class ManualFieldPickerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_field_picker);
         SharedPreferences sharedPreferences = getSharedPreferences(
-                LocalAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
+                CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
         DefaultFieldTypesSource defaultFieldTypesSource =
                 DefaultFieldTypesLocalJsonSource.getInstance(getResources(),
                         new GsonBuilder().create());
-        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
-                defaultFieldTypesSource, new AppExecutors()).autofillDao();
         String datasetId = getIntent().getStringExtra(EXTRA_DATASET_ID);
         mRecyclerView = findViewById(R.id.fieldsList);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, VERTICAL));
         mListTitle = findViewById(R.id.listTitle);
-        mLocalAutofillDataSource = LocalAutofillDataSource.getInstance(sharedPreferences,
-                autofillDao, new AppExecutors());
-        mLocalAutofillDataSource.getAutofillDatasetWithId(datasetId,
+        mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(sharedPreferences, new AppExecutors());
+        mCapacitorAutofillDataSource.getAutofillDatasetWithId(datasetId,
                 new DataCallback<DatasetWithFilledAutofillFields>() {
                     @Override
                     public void onLoaded(DatasetWithFilledAutofillFields dataset) {

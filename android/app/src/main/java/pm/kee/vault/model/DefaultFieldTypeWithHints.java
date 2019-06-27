@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.model;
+package pm.kee.vault.model;
 
 import java.util.List;
 

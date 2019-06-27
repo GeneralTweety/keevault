@@ -15,9 +15,6 @@
  */
 package pm.kee.vault.simple;
 
-import static com.example.android.autofill.service.simple.BasicService.getLatestAssistStructure;
-import static com.example.android.autofill.service.simple.BasicService.newDatasetPresentation;
-
 import android.app.assist.AssistStructure;
 import android.app.assist.AssistStructure.ViewNode;
 import android.content.Context;
@@ -43,12 +40,11 @@ import android.view.autofill.AutofillValue;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.example.android.autofill.service.MyAutofillService;
-import com.example.android.autofill.service.settings.MyPreferences;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import static pm.kee.vault.simple.BasicService.getLatestAssistStructure;
 
 /**
  * A basic service used to demonstrate multi-steps workflows (such as

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.autofill.service.data;
+package pm.kee.vault.data;
 
 import android.service.autofill.SaveInfo;
 import android.view.autofill.AutofillId;
