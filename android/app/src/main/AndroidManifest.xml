@@ -48,7 +48,7 @@
     -->
         <service
             android:name=".MyAutofillService"
-            android:label="Multi-Dataset Autofill Service"
+            android:label="Kee Vault Autofill Service"
             android:permission="android.permission.BIND_AUTOFILL_SERVICE">
 
             <intent-filter>
@@ -56,14 +56,14 @@
             </intent-filter>
         </service>
 
-        <service
-            android:name=".simple.BasicService"
-            android:label="Basic Autofill Service"
-            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.autofill.AutofillService" />
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:name=".simple.BasicService"-->
+            <!--android:label="Basic Autofill Service"-->
+            <!--android:permission="android.permission.BIND_AUTOFILL_SERVICE">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.service.autofill.AutofillService" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
         <service
             android:name=".simple.DebugService"
@@ -77,14 +77,14 @@
             </intent-filter>
         </service>
 
-        <service
-            android:name=".simple.MultiStepsService"
-            android:label="Multiple-steps Service"
-            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.autofill.AutofillService" />
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:name=".simple.MultiStepsService"-->
+            <!--android:label="Multiple-steps Service"-->
+            <!--android:permission="android.permission.BIND_AUTOFILL_SERVICE">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.service.autofill.AutofillService" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
         <activity
             android:name=".AuthActivity"

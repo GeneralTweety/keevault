@@ -21,9 +21,8 @@ import java.util.List;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.model.FilledAutofillField;
-import pm.kee.vault.model.ResourceIdHeuristic;
 
 public interface AutofillDataSource {
 
@@ -31,7 +30,7 @@ public interface AutofillDataSource {
      * Asynchronously gets saved list of {@link DatasetWithFilledAutofillFields} that contains some
      * objects that can autofill fields with these {@code autofillHints}.
      */
-    void getAutofillDatasets(List<String> allAutofillHints,
+    void getAutofillDatasets(String url,
             DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback);
 
     void getAllAutofillDatasets(
@@ -50,13 +49,13 @@ public interface AutofillDataSource {
      */
     void saveAutofillDatasets(List<DatasetWithFilledAutofillFields>
             datasetsWithFilledAutofillFields);
-
-    void saveResourceIdHeuristic(ResourceIdHeuristic resourceIdHeuristic);
+//
+//    void saveResourceIdHeuristic(ResourceIdHeuristic resourceIdHeuristic);
 
     /**
      * Gets all autofill field types.
      */
-    void getFieldTypes(DataCallback<List<FieldTypeWithHeuristics>> fieldTypesCallback);
+    void getFieldTypes(DataCallback<List<FieldTypeWithHints>> fieldTypesCallback);
 
     /**
      * Gets all autofill field types.
@@ -64,7 +63,7 @@ public interface AutofillDataSource {
     void getFieldType(String typeName, DataCallback<FieldType> fieldTypeCallback);
 
     void getFieldTypeByAutofillHints(
-            DataCallback<HashMap<String, FieldTypeWithHeuristics>> fieldTypeMapCallback);
+            DataCallback<HashMap<String, FieldTypeWithHints>> fieldTypeMapCallback);
 
     void getFilledAutofillField(String datasetId, String fieldTypeName, DataCallback<FilledAutofillField> fieldCallback);
 

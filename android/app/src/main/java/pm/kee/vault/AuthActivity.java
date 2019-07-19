@@ -41,12 +41,10 @@ import pm.kee.vault.data.ClientViewMetadataBuilder;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.data.adapter.DatasetAdapter;
 import pm.kee.vault.data.adapter.ResponseAdapter;
-import pm.kee.vault.data.source.DefaultFieldTypesSource;
 import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
-import pm.kee.vault.data.source.local.DefaultFieldTypesLocalJsonSource;
 import pm.kee.vault.data.source.local.DigitalAssetLinksRepository;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.util.AppExecutors;
 
 import static android.view.autofill.AutofillManager.EXTRA_ASSIST_STRUCTURE;
@@ -96,9 +94,6 @@ public class AuthActivity extends AppCompatActivity {
         setContentView(R.layout.multidataset_service_auth_activity);
         SharedPreferences sharedPreferences =
                 getSharedPreferences(CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
-        DefaultFieldTypesSource defaultFieldTypesSource =
-                DefaultFieldTypesLocalJsonSource.getInstance(getResources(),
-                        new GsonBuilder().create());
 //        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
 //                defaultFieldTypesSource, new AppExecutors()).autofillDao();
         mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(sharedPreferences,
@@ -146,9 +141,9 @@ public class AuthActivity extends AppCompatActivity {
         ClientParser clientParser = new ClientParser(structure);
         mReplyIntent = new Intent();
         mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
-                new DataCallback<HashMap<String, FieldTypeWithHeuristics>>() {
+                new DataCallback<HashMap<String, FieldTypeWithHints>>() {
             @Override
-            public void onLoaded(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
+            public void onLoaded(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
                 ClientViewMetadataBuilder builder = new ClientViewMetadataBuilder(clientParser,
                         fieldTypesByAutofillHint);
                 mClientViewMetadata = builder.buildClientViewMetadata();
@@ -171,7 +166,7 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void fetchDatasetAndSetIntent(
-            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint, String datasetName) {
+            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint, String datasetName) {
         mCapacitorAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
                 datasetName, new DataCallback<DatasetWithFilledAutofillFields>() {
                     @Override
@@ -193,12 +188,12 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void fetchAllDatasetsAndSetIntent(
-            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
-        mCapacitorAutofillDataSource.getAutofillDatasets(mClientViewMetadata.getAllHints(),
+            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
+        mCapacitorAutofillDataSource.getAutofillDatasets("bullshit url 2",
                 new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                     @Override
                     public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
-                        boolean datasetAuth = true;
+                        boolean datasetAuth = false;
                         FillResponse fillResponse = mResponseAdapter.buildResponse(
                                 fieldTypesByAutofillHint, datasets, datasetAuth);
                         setResponseIntent(fillResponse);

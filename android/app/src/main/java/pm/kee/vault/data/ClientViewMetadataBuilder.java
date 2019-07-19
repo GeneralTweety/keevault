@@ -26,16 +26,16 @@ import java.util.HashMap;
 import java.util.List;
 
 import pm.kee.vault.ClientParser;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 
 import static pm.kee.vault.util.Util.logd;
 
 public class ClientViewMetadataBuilder {
     private ClientParser mClientParser;
-    private HashMap<String, FieldTypeWithHeuristics> mFieldTypesByAutofillHint;
+    private HashMap<String, FieldTypeWithHints> mFieldTypesByAutofillHint;
 
     public ClientViewMetadataBuilder(ClientParser parser,
-            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
+            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
         mClientParser = parser;
         mFieldTypesByAutofillHint = fieldTypesByAutofillHint;
     }
@@ -75,7 +75,7 @@ public class ClientViewMetadataBuilder {
         String[] hints = root.getAutofillHints();
         if (hints != null) {
             for (String hint : hints) {
-                FieldTypeWithHeuristics fieldTypeWithHints = mFieldTypesByAutofillHint.get(hint);
+                FieldTypeWithHints fieldTypeWithHints = mFieldTypesByAutofillHint.get(hint);
                 if (fieldTypeWithHints != null && fieldTypeWithHints.fieldType != null) {
                     allHints.add(hint);
                     autofillSaveType.value |= fieldTypeWithHints.fieldType.getSaveInfo();

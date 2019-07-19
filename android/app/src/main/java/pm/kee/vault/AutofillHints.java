@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 import pm.kee.vault.model.FieldType;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 
 import static java.util.stream.Collectors.toList;
 import static pm.kee.vault.util.Util.logd;
@@ -68,13 +68,13 @@ public final class AutofillHints {
 //    }
 
     public static String getFieldTypeNameFromAutofillHints(
-            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
             @NonNull List<String> hints) {
         return getFieldTypeNameFromAutofillHints(fieldTypesByAutofillHint, hints, PARTITION_ALL);
     }
 
     public static String getFieldTypeNameFromAutofillHints(
-            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
             @NonNull List<String> hints, int partition) {
         List<String> fieldTypeNames = removePrefixes(hints)
                 .stream()
@@ -83,7 +83,7 @@ public final class AutofillHints {
                 .filter(Objects::nonNull)
                 .filter((fieldTypeWithHints) ->
                         matchesPartition(fieldTypeWithHints.fieldType.getPartition(), partition))
-                .map(FieldTypeWithHeuristics::getFieldType).map(FieldType::getTypeName)
+                .map(f -> f.fieldType).map(FieldType::getTypeName)
                 .collect(toList());
         if (fieldTypeNames != null && fieldTypeNames.size() > 0) {
             return fieldTypeNames.get(0);

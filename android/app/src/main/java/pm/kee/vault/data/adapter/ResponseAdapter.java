@@ -32,7 +32,7 @@ import pm.kee.vault.RemoteViewsHelper;
 import pm.kee.vault.data.ClientViewMetadata;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.model.FilledAutofillField;
 
 public class ResponseAdapter {
@@ -67,7 +67,7 @@ public class ResponseAdapter {
      * Wraps autofill data in a Response object (essentially a series of Datasets) which can then
      * be sent back to the client View.
      */
-    public FillResponse buildResponse(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+    public FillResponse buildResponse(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
                                       List<DatasetWithFilledAutofillFields> datasets, boolean datasetAuth) {
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
         if (datasets != null) {

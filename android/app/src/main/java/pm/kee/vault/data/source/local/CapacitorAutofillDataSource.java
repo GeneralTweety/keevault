@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import pm.kee.vault.data.ClientViewMetadata;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.data.source.AutofillDataSource;
 import pm.kee.vault.data.source.local.dao.capDao;
@@ -30,9 +31,8 @@ import pm.kee.vault.model.AutofillDataset;
 import pm.kee.vault.model.AutofillHint;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.model.FilledAutofillField;
-import pm.kee.vault.model.ResourceIdHeuristic;
 import pm.kee.vault.util.AppExecutors;
 
 import static pm.kee.vault.util.Util.logw;
@@ -74,16 +74,15 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
     }
 
     @Override
-    public void getAutofillDatasets(List<String> allAutofillHints,
-            DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
+    public void getAutofillDatasets(String url, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            final List<String> typeNames = getFieldTypesForAutofillHints(allAutofillHints)
-                    .stream()
-                    .map(FieldTypeWithHeuristics::getFieldType)
-                    .map(FieldType::getTypeName)
-                    .collect(Collectors.toList());
+//            final List<String> typeNames = getFieldTypesForAutofillHints(allAutofillHints)
+//                    .stream()
+//                    .map((u) -> u.fieldType)
+//                    .map(FieldType::getTypeName)
+//                    .collect(Collectors.toList());
             List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
-                    mCapDao.getDatasets(typeNames);
+                    mCapDao.getDatasets(url);
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );
@@ -142,18 +141,18 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
         });
         incrementDatasetNumber();
     }
+//
+//    @Override
+//    public void saveResourceIdHeuristic(ResourceIdHeuristic resourceIdHeuristic) {
+//        mAppExecutors.diskIO().execute(() -> {
+//            mCapDao.insertResourceIdHeuristic(resourceIdHeuristic);
+//        });
+//    }
 
     @Override
-    public void saveResourceIdHeuristic(ResourceIdHeuristic resourceIdHeuristic) {
+    public void getFieldTypes(DataCallback<List<FieldTypeWithHints>> fieldTypesCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            mCapDao.insertResourceIdHeuristic(resourceIdHeuristic);
-        });
-    }
-
-    @Override
-    public void getFieldTypes(DataCallback<List<FieldTypeWithHeuristics>> fieldTypesCallback) {
-        mAppExecutors.diskIO().execute(() -> {
-            List<FieldTypeWithHeuristics> fieldTypeWithHints = mCapDao.getFieldTypesWithHints();
+            List<FieldTypeWithHints> fieldTypeWithHints = mCapDao.getFieldTypesWithHints();
             mAppExecutors.mainThread().execute(() -> {
                 if (fieldTypeWithHints != null) {
                     fieldTypesCallback.onLoaded(fieldTypeWithHints);
@@ -166,9 +165,9 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
 
     @Override
     public void getFieldTypeByAutofillHints(
-            DataCallback<HashMap<String, FieldTypeWithHeuristics>> fieldTypeMapCallback) {
+            DataCallback<HashMap<String, FieldTypeWithHints>> fieldTypeMapCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            HashMap<String, FieldTypeWithHeuristics> hintMap = getFieldTypeByAutofillHints();
+            HashMap<String, FieldTypeWithHints> hintMap = getFieldTypeByAutofillHints();
             mAppExecutors.mainThread().execute(() -> {
                 if (hintMap != null) {
                     fieldTypeMapCallback.onLoaded(hintMap);
@@ -210,12 +209,12 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
         });
     }
 
-    private HashMap<String, FieldTypeWithHeuristics> getFieldTypeByAutofillHints() {
-        HashMap<String, FieldTypeWithHeuristics> hintMap = new HashMap<>();
-        List<FieldTypeWithHeuristics> fieldTypeWithHints =
+    private HashMap<String, FieldTypeWithHints> getFieldTypeByAutofillHints() {
+        HashMap<String, FieldTypeWithHints> hintMap = new HashMap<>();
+        List<FieldTypeWithHints> fieldTypeWithHints =
                 mCapDao.getFieldTypesWithHints();
         if (fieldTypeWithHints != null) {
-            for (FieldTypeWithHeuristics fieldType : fieldTypeWithHints) {
+            for (FieldTypeWithHints fieldType : fieldTypeWithHints) {
                 for (AutofillHint hint : fieldType.autofillHints) {
                     hintMap.put(hint.mAutofillHint, fieldType);
                 }
@@ -226,7 +225,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
         }
     }
 
-    private List<FieldTypeWithHeuristics> getFieldTypesForAutofillHints(List<String> autofillHints) {
+    private List<FieldTypeWithHints> getFieldTypesForAutofillHints(List<String> autofillHints) {
         return mCapDao.getFieldTypesForAutofillHints(autofillHints);
     }
 

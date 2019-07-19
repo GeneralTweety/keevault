@@ -36,7 +36,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,13 +47,11 @@ import pm.kee.vault.data.ClientViewMetadataBuilder;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.data.adapter.DatasetAdapter;
 import pm.kee.vault.data.adapter.ResponseAdapter;
-import pm.kee.vault.data.source.DefaultFieldTypesSource;
 import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
-import pm.kee.vault.data.source.local.DefaultFieldTypesLocalJsonSource;
 import pm.kee.vault.model.AutofillDataset;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.model.FilledAutofillField;
 import pm.kee.vault.util.AppExecutors;
 
@@ -94,9 +91,6 @@ public class ManualActivity extends AppCompatActivity {
         setContentView(R.layout.multidataset_service_manual_activity);
         SharedPreferences sharedPreferences =
                 getSharedPreferences(CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
-        DefaultFieldTypesSource defaultFieldTypesSource =
-                DefaultFieldTypesLocalJsonSource.getInstance(getResources(),
-                        new GsonBuilder().create());
         mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(sharedPreferences,
                 new AppExecutors());
         mPackageName = getPackageName();
@@ -162,9 +156,9 @@ public class ManualActivity extends AppCompatActivity {
         ClientParser clientParser = new ClientParser(structure);
         mReplyIntent = new Intent();
         mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
-                new DataCallback<HashMap<String, FieldTypeWithHeuristics>>() {
+                new DataCallback<HashMap<String, FieldTypeWithHints>>() {
                     @Override
-                    public void onLoaded(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
+                    public void onLoaded(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
                         ClientViewMetadataBuilder builder = new ClientViewMetadataBuilder(clientParser,
                                 fieldTypesByAutofillHint);
                         mClientViewMetadata = builder.buildClientViewMetadata();

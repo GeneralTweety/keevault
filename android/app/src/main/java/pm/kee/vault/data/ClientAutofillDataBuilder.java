@@ -34,7 +34,7 @@ import pm.kee.vault.ClientParser;
 import pm.kee.vault.model.AutofillDataset;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.model.FilledAutofillField;
 
 import static pm.kee.vault.util.Util.loge;
@@ -42,10 +42,10 @@ import static pm.kee.vault.util.Util.loge;
 
 public class ClientAutofillDataBuilder implements AutofillDataBuilder {
     private final ClientParser mClientParser;
-    private final HashMap<String, FieldTypeWithHeuristics> mFieldTypesByAutofillHint;
+    private final HashMap<String, FieldTypeWithHints> mFieldTypesByAutofillHint;
     private final String mPackageName;
 
-    public ClientAutofillDataBuilder(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+    public ClientAutofillDataBuilder(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
             String packageName, ClientParser clientParser) {
         mClientParser = clientParser;
         mFieldTypesByAutofillHint = fieldTypesByAutofillHint;
@@ -122,7 +122,7 @@ public class ClientAutofillDataBuilder implements AutofillDataBuilder {
         for (int i = 0; i < hints.length; i++) {
             String hint = hints[i];
             // Then check if the "actual" hint is supported.
-            FieldTypeWithHeuristics fieldTypeWithHeuristics = mFieldTypesByAutofillHint.get(hint);
+            FieldTypeWithHints fieldTypeWithHeuristics = mFieldTypesByAutofillHint.get(hint);
             if (fieldTypeWithHeuristics != null) {
                 FieldType fieldType = fieldTypeWithHeuristics.fieldType;
                 if (!AutofillHints.matchesPartition(fieldType.getPartition(), partition)) {

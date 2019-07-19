@@ -34,7 +34,7 @@ import pm.kee.vault.AutofillHints;
 import pm.kee.vault.ClientParser;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.model.FilledAutofillField;
 
 import static java.util.stream.Collectors.toMap;
@@ -52,7 +52,7 @@ public class DatasetAdapter {
     /**
      * Wraps autofill data in a {@link Dataset} object which can then be sent back to the client.
      */
-    public Dataset buildDataset(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+    public Dataset buildDataset(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
             DatasetWithFilledAutofillFields datasetWithFilledAutofillFields,
             RemoteViews remoteViews) {
         return buildDataset(fieldTypesByAutofillHint, datasetWithFilledAutofillFields, remoteViews,
@@ -74,7 +74,7 @@ public class DatasetAdapter {
      * Wraps autofill data in a {@link Dataset} object with an IntentSender, which can then be
      * sent back to the client.
      */
-    public Dataset buildDataset(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+    public Dataset buildDataset(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
             DatasetWithFilledAutofillFields datasetWithFilledAutofillFields,
             RemoteViews remoteViews, IntentSender intentSender) {
         Dataset.Builder datasetBuilder = new Dataset.Builder(remoteViews);
@@ -92,7 +92,7 @@ public class DatasetAdapter {
     /**
      * Build an autofill {@link Dataset} using saved data and the client's AssistStructure.
      */
-    private boolean bindDataset(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+    private boolean bindDataset(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
             DatasetWithFilledAutofillFields datasetWithFilledAutofillFields,
             Dataset.Builder datasetBuilder) {
         MutableBoolean setValueAtLeastOnce = new MutableBoolean(false);
@@ -118,7 +118,7 @@ public class DatasetAdapter {
     }
 
     private void parseAutofillFields(AssistStructure.ViewNode viewNode,
-            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint,
+            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint,
             Map<String, FilledAutofillField> filledAutofillFieldsByTypeName,
             Dataset.Builder builder, MutableBoolean setValueAtLeastOnce) {
         String[] rawHints = viewNode.getAutofillHints();

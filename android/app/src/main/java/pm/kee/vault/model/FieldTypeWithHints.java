@@ -18,22 +18,22 @@ package pm.kee.vault.model;
 
 import java.util.List;
 
-public class FieldTypeWithHeuristics {
+public class FieldTypeWithHints {
     public FieldType fieldType;
 
     public List<AutofillHint> autofillHints;
 
-    public List<ResourceIdHeuristic> resourceIdHeuristics;
-
-    public FieldType getFieldType() {
-        return fieldType;
-    }
-
-    public List<AutofillHint> getAutofillHints() {
-        return autofillHints;
-    }
-
-    public List<ResourceIdHeuristic> getResourceIdHeuristics() {
-        return resourceIdHeuristics;
-    }
+//    public List<ResourceIdHeuristic> resourceIdHeuristics;
+//
+//    public FieldType getFieldType() {
+//        return fieldType;
+//    }
+//
+//    public List<AutofillHint> getAutofillHints() {
+//        return autofillHints;
+//    }
+//
+//    public List<ResourceIdHeuristic> getResourceIdHeuristics() {
+//        return resourceIdHeuristics;
+//    }
 }

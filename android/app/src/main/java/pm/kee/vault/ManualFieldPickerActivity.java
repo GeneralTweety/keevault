@@ -35,9 +35,7 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import pm.kee.vault.data.DataCallback;
-import pm.kee.vault.data.source.DefaultFieldTypesSource;
 import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
-import pm.kee.vault.data.source.local.DefaultFieldTypesLocalJsonSource;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FilledAutofillField;
 import pm.kee.vault.util.AppExecutors;
@@ -67,9 +65,6 @@ public class ManualFieldPickerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_field_picker);
         SharedPreferences sharedPreferences = getSharedPreferences(
                 CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
-        DefaultFieldTypesSource defaultFieldTypesSource =
-                DefaultFieldTypesLocalJsonSource.getInstance(getResources(),
-                        new GsonBuilder().create());
         String datasetId = getIntent().getStringExtra(EXTRA_DATASET_ID);
         mRecyclerView = findViewById(R.id.fieldsList);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, VERTICAL));

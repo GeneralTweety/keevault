@@ -36,6 +36,7 @@ import com.google.gson.GsonBuilder;
 import java.util.HashMap;
 import java.util.List;
 
+import pm.kee.vault.capacitor.AutoFillPlugin;
 import pm.kee.vault.data.AutofillDataBuilder;
 import pm.kee.vault.data.ClientAutofillDataBuilder;
 import pm.kee.vault.data.ClientViewMetadata;
@@ -43,16 +44,14 @@ import pm.kee.vault.data.ClientViewMetadataBuilder;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.data.adapter.DatasetAdapter;
 import pm.kee.vault.data.adapter.ResponseAdapter;
-import pm.kee.vault.data.source.DefaultFieldTypesSource;
 import pm.kee.vault.data.source.PackageVerificationDataSource;
 import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
-import pm.kee.vault.data.source.local.DefaultFieldTypesLocalJsonSource;
 import pm.kee.vault.data.source.local.DigitalAssetLinksRepository;
 import pm.kee.vault.data.source.local.SharedPrefsPackageVerificationRepository;
 import pm.kee.vault.model.DalCheck;
 import pm.kee.vault.model.DalInfo;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
-import pm.kee.vault.model.FieldTypeWithHeuristics;
+import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.util.AppExecutors;
 import pm.kee.vault.util.Util;
 
@@ -79,9 +78,8 @@ public class MyAutofillService extends AutofillService {
         super.onCreate();
         SharedPreferences localAfDataSourceSharedPrefs =
                 getSharedPreferences(CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
-        DefaultFieldTypesSource defaultFieldTypesSource =
-                DefaultFieldTypesLocalJsonSource.getInstance(getResources(),
-                        new GsonBuilder().create());
+        Util.setLoggingLevel(Util.LogLevel.Verbose);
+        logd("onCreate()");
 //        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
 //                defaultFieldTypesSource, new AppExecutors()).autofillDao();
         mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(localAfDataSourceSharedPrefs,
@@ -99,14 +97,17 @@ public class MyAutofillService extends AutofillService {
         AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
         ClientParser parser = new ClientParser(structures);
 
+        AutoFillPlugin.test();
+
         // Check user's settings for authenticating Responses and Datasets.
-        boolean responseAuth = true;
-        boolean datasetAuth = true;
+        //TODO: should depend upon whether capacitor link tells us user is already authenticated or not, as well as any settings in there such as using just a fingerprint?
+        boolean responseAuth = false;
+        boolean datasetAuth = false;
         boolean manual = (request.getFlags() & FillRequest.FLAG_MANUAL_REQUEST) != 0;
         mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
-                new DataCallback<HashMap<String, FieldTypeWithHeuristics>>() {
+                new DataCallback<HashMap<String, FieldTypeWithHints>>() {
                     @Override
-                    public void onLoaded(HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
+                    public void onLoaded(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
                         DatasetAdapter datasetAdapter = new DatasetAdapter(parser);
                         ClientViewMetadataBuilder clientViewMetadataBuilder =
                                 new ClientViewMetadataBuilder(parser, fieldTypesByAutofillHint);
@@ -138,7 +139,7 @@ public class MyAutofillService extends AutofillService {
     }
 
     private void fetchDataAndGenerateResponse(
-            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint, boolean responseAuth,
+            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint, boolean responseAuth,
             boolean datasetAuth, boolean manual, FillCallback callback) {
         if (responseAuth) {
             // If the entire Autofill Response is authenticated, AuthActivity is used
@@ -151,7 +152,7 @@ public class MyAutofillService extends AutofillService {
                 callback.onSuccess(response);
             }
         } else {
-            mCapacitorAutofillDataSource.getAutofillDatasets(mClientViewMetadata.getAllHints(),
+            mCapacitorAutofillDataSource.getAutofillDatasets("bullshit url",
                     new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                         @Override
                         public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
@@ -190,10 +191,10 @@ public class MyAutofillService extends AutofillService {
         AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
         ClientParser parser = new ClientParser(structures);
         mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
-                new DataCallback<HashMap<String, FieldTypeWithHeuristics>>() {
+                new DataCallback<HashMap<String, FieldTypeWithHints>>() {
                     @Override
                     public void onLoaded(
-                            HashMap<String, FieldTypeWithHeuristics> fieldTypesByAutofillHint) {
+                            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
                         mAutofillDataBuilder = new ClientAutofillDataBuilder(
                                 fieldTypesByAutofillHint, getPackageName(), parser);
                         ClientViewMetadataBuilder clientViewMetadataBuilder =
