@@ -70,5 +70,5 @@ public interface AutofillDataSource {
     /**
      * Clears all data.
      */
-    void clear();
+//    void clear();
 }

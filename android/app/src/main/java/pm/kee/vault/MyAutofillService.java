@@ -31,21 +31,19 @@ import androidx.annotation.NonNull;
 
 import android.widget.RemoteViews;
 
-import com.google.gson.GsonBuilder;
-
 import java.util.HashMap;
 import java.util.List;
 
-import pm.kee.vault.capacitor.AutoFillPlugin;
 import pm.kee.vault.data.AutofillDataBuilder;
 import pm.kee.vault.data.ClientAutofillDataBuilder;
 import pm.kee.vault.data.ClientViewMetadata;
 import pm.kee.vault.data.ClientViewMetadataBuilder;
 import pm.kee.vault.data.DataCallback;
+import pm.kee.vault.data.EncryptedDataStorage;
 import pm.kee.vault.data.adapter.DatasetAdapter;
 import pm.kee.vault.data.adapter.ResponseAdapter;
 import pm.kee.vault.data.source.PackageVerificationDataSource;
-import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
+import pm.kee.vault.data.source.local.ESPAutofillDataSource;
 import pm.kee.vault.data.source.local.DigitalAssetLinksRepository;
 import pm.kee.vault.data.source.local.SharedPrefsPackageVerificationRepository;
 import pm.kee.vault.model.DalCheck;
@@ -66,7 +64,7 @@ import static pm.kee.vault.util.Util.logw;
 
 public class MyAutofillService extends AutofillService {
 
-    private CapacitorAutofillDataSource mCapacitorAutofillDataSource;
+    private ESPAutofillDataSource mESPAutofillDataSource;
     private DigitalAssetLinksRepository mDalRepository;
     private PackageVerificationDataSource mPackageVerificationRepository;
     private AutofillDataBuilder mAutofillDataBuilder;
@@ -76,14 +74,8 @@ public class MyAutofillService extends AutofillService {
     @Override
     public void onCreate() {
         super.onCreate();
-        SharedPreferences localAfDataSourceSharedPrefs =
-                getSharedPreferences(CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
         Util.setLoggingLevel(Util.LogLevel.Verbose);
         logd("onCreate()");
-//        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
-//                defaultFieldTypesSource, new AppExecutors()).autofillDao();
-        mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(localAfDataSourceSharedPrefs,
-                new AppExecutors());
         mDalRepository = DigitalAssetLinksRepository.getInstance(getPackageManager());
         mPackageVerificationRepository = SharedPrefsPackageVerificationRepository.getInstance(this);
     }
@@ -97,14 +89,12 @@ public class MyAutofillService extends AutofillService {
         AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
         ClientParser parser = new ClientParser(structures);
 
-        AutoFillPlugin.test();
-
         // Check user's settings for authenticating Responses and Datasets.
         //TODO: should depend upon whether capacitor link tells us user is already authenticated or not, as well as any settings in there such as using just a fingerprint?
         boolean responseAuth = false;
         boolean datasetAuth = false;
         boolean manual = (request.getFlags() & FillRequest.FLAG_MANUAL_REQUEST) != 0;
-        mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
+        mESPAutofillDataSource.getFieldTypeByAutofillHints(
                 new DataCallback<HashMap<String, FieldTypeWithHints>>() {
                     @Override
                     public void onLoaded(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
@@ -152,7 +142,7 @@ public class MyAutofillService extends AutofillService {
                 callback.onSuccess(response);
             }
         } else {
-            mCapacitorAutofillDataSource.getAutofillDatasets("bullshit url",
+            mESPAutofillDataSource.getAutofillDatasets("bullshit url",
                     new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                         @Override
                         public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
@@ -190,7 +180,7 @@ public class MyAutofillService extends AutofillService {
                 fillContexts.stream().map(FillContext::getStructure).collect(toList());
         AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
         ClientParser parser = new ClientParser(structures);
-        mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
+        mESPAutofillDataSource.getFieldTypeByAutofillHints(
                 new DataCallback<HashMap<String, FieldTypeWithHints>>() {
                     @Override
                     public void onLoaded(
@@ -258,15 +248,23 @@ public class MyAutofillService extends AutofillService {
     }
 
     private void buildAndSaveAutofillData() {
-        int datasetNumber = mCapacitorAutofillDataSource.getDatasetNumber();
+        int datasetNumber = 1; // mESPAutofillDataSource.getDatasetNumber();
         List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
                 mAutofillDataBuilder.buildDatasetsByPartition(datasetNumber);
-        mCapacitorAutofillDataSource.saveAutofillDatasets(datasetsWithFilledAutofillFields);
+        mESPAutofillDataSource.saveAutofillDatasets(datasetsWithFilledAutofillFields);
     }
 
     @Override
     public void onConnected() {
         logd("onConnected");
+        // Set up each time system binds to the service since user could have signed in
+        // as a different vault user since this native Kee Vault app service was last created
+        SharedPreferences localAfDataSourceSharedPrefs =
+                getSharedPreferences(ESPAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
+        EncryptedDataStorage storage = new EncryptedDataStorage(localAfDataSourceSharedPrefs);
+        storage.useMostRecentKey();
+        mESPAutofillDataSource = ESPAutofillDataSource.getInstance(storage,
+                new AppExecutors());
     }
 
     @Override

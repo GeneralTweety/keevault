@@ -28,7 +28,7 @@ import static pm.kee.vault.util.Util.logw;
 
 public class SharedPrefsPackageVerificationRepository implements PackageVerificationDataSource {
 
-    private static final String SHARED_PREF_KEY = "com.example.android.autofill.service"
+    private static final String SHARED_PREF_KEY = "pm.kee.vault.service.autofill"
             + ".datasource.PackageVerificationDataSource";
     private static PackageVerificationDataSource sInstance;
 

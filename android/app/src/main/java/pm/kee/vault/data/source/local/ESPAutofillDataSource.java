@@ -25,8 +25,9 @@ import java.util.stream.Collectors;
 
 import pm.kee.vault.data.ClientViewMetadata;
 import pm.kee.vault.data.DataCallback;
+import pm.kee.vault.data.EncryptedDataStorage;
 import pm.kee.vault.data.source.AutofillDataSource;
-import pm.kee.vault.data.source.local.dao.capDao;
+import pm.kee.vault.data.source.local.dao.EDSDao;
 import pm.kee.vault.model.AutofillDataset;
 import pm.kee.vault.model.AutofillHint;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
@@ -37,31 +38,29 @@ import pm.kee.vault.util.AppExecutors;
 
 import static pm.kee.vault.util.Util.logw;
 
-public class CapacitorAutofillDataSource implements AutofillDataSource {
-    public static final String SHARED_PREF_KEY = "com.example.android.autofill"
-            + ".service.datasource.CapacitorAutofillDataSource";
-    private static final String DATASET_NUMBER_KEY = "datasetNumber";
+public class ESPAutofillDataSource implements AutofillDataSource {
+    public static final String SHARED_PREF_KEY = "pm.kee.vault.service.autofill"
+            + ".datasource.ESPAutofillDataSource";
+//    private static final String DATASET_NUMBER_KEY = "datasetNumber";
     private static final Object sLock = new Object();
 
-    private static CapacitorAutofillDataSource sInstance;
+    private static ESPAutofillDataSource sInstance;
 
-    private final SharedPreferences mSharedPreferences;
+    private final EncryptedDataStorage mEDS;
     private final AppExecutors mAppExecutors;
-    private final capDao mCapDao;
+    private final EDSDao mEDSDao;
 
-    private CapacitorAutofillDataSource(SharedPreferences sharedPreferences, AppExecutors appExecutors
-    //TODO: Inject some sort of Capacitor data access layer object
-                                    ) {
-        mSharedPreferences = sharedPreferences;
+    private ESPAutofillDataSource(EncryptedDataStorage eds, AppExecutors appExecutors) {
+        mEDS = eds;
         mAppExecutors = appExecutors;
-        mCapDao = new capDao();
+        mEDSDao = new EDSDao(eds);
     }
 
-    public static CapacitorAutofillDataSource getInstance(SharedPreferences sharedPreferences,
+    public static ESPAutofillDataSource getInstance(EncryptedDataStorage eds,
             AppExecutors appExecutors) {
         synchronized (sLock) {
             if (sInstance == null) {
-                sInstance = new CapacitorAutofillDataSource(sharedPreferences, appExecutors);
+                sInstance = new ESPAutofillDataSource(eds, appExecutors);
             }
             return sInstance;
         }
@@ -82,7 +81,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
 //                    .map(FieldType::getTypeName)
 //                    .collect(Collectors.toList());
             List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
-                    mCapDao.getDatasets(url);
+                    mEDSDao.getDatasets(url);
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );
@@ -94,7 +93,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
             DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
         mAppExecutors.diskIO().execute(() -> {
             List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
-                    mCapDao.getAllDatasets();
+                    mEDSDao.getAllDatasets();
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );
@@ -107,7 +106,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
         mAppExecutors.diskIO().execute(() -> {
             // Room does not support TypeConverters for collections.
             List<DatasetWithFilledAutofillFields> autofillDatasetFields =
-                    mCapDao.getDatasetsWithName(allAutofillHints, datasetName);
+                    mEDSDao.getDatasetsWithName(allAutofillHints, datasetName);
             if (autofillDatasetFields != null && !autofillDatasetFields.isEmpty()) {
                 if (autofillDatasetFields.size() > 1) {
                     logw("More than 1 dataset with name %s", datasetName);
@@ -135,11 +134,11 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
                 List<FilledAutofillField> filledAutofillFields =
                         datasetWithFilledAutofillFields.filledAutofillFields;
                 AutofillDataset autofillDataset = datasetWithFilledAutofillFields.autofillDataset;
-                mCapDao.insertAutofillDataset(autofillDataset);
-                mCapDao.insertFilledAutofillFields(filledAutofillFields);
+                mEDSDao.insertAutofillDataset(autofillDataset);
+                mEDSDao.insertFilledAutofillFields(filledAutofillFields);
             }
         });
-        incrementDatasetNumber();
+//        incrementDatasetNumber();
     }
 //
 //    @Override
@@ -152,7 +151,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
     @Override
     public void getFieldTypes(DataCallback<List<FieldTypeWithHints>> fieldTypesCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            List<FieldTypeWithHints> fieldTypeWithHints = mCapDao.getFieldTypesWithHints();
+            List<FieldTypeWithHints> fieldTypeWithHints = mEDSDao.getFieldTypesWithHints();
             mAppExecutors.mainThread().execute(() -> {
                 if (fieldTypeWithHints != null) {
                     fieldTypesCallback.onLoaded(fieldTypeWithHints);
@@ -181,7 +180,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
     @Override
     public void getFilledAutofillField(String datasetId, String fieldTypeName, DataCallback<FilledAutofillField> fieldCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            FilledAutofillField filledAutofillField = mCapDao.getFilledAutofillField(datasetId, fieldTypeName);
+            FilledAutofillField filledAutofillField = mEDSDao.getFilledAutofillField(datasetId, fieldTypeName);
             mAppExecutors.mainThread().execute(() -> {
                 fieldCallback.onLoaded(filledAutofillField);
             });
@@ -191,7 +190,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
     @Override
     public void getFieldType(String fieldTypeName, DataCallback<FieldType> fieldTypeCallback) {
         mAppExecutors.diskIO().execute(() -> {
-            FieldType fieldType = mCapDao.getFieldType(fieldTypeName);
+            FieldType fieldType = mEDSDao.getFieldType(fieldTypeName);
             mAppExecutors.mainThread().execute(() -> {
                 fieldTypeCallback.onLoaded(fieldType);
             });
@@ -202,7 +201,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
             DataCallback<DatasetWithFilledAutofillFields> callback) {
         mAppExecutors.diskIO().execute(() -> {
             DatasetWithFilledAutofillFields dataset =
-                    mCapDao.getAutofillDatasetWithId(datasetId);
+                    mEDSDao.getAutofillDatasetWithId(datasetId);
             mAppExecutors.mainThread().execute(() -> {
                 callback.onLoaded(dataset);
             });
@@ -212,7 +211,7 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
     private HashMap<String, FieldTypeWithHints> getFieldTypeByAutofillHints() {
         HashMap<String, FieldTypeWithHints> hintMap = new HashMap<>();
         List<FieldTypeWithHints> fieldTypeWithHints =
-                mCapDao.getFieldTypesWithHints();
+                mEDSDao.getFieldTypesWithHints();
         if (fieldTypeWithHints != null) {
             for (FieldTypeWithHints fieldType : fieldTypeWithHints) {
                 for (AutofillHint hint : fieldType.autofillHints) {
@@ -226,31 +225,31 @@ public class CapacitorAutofillDataSource implements AutofillDataSource {
     }
 
     private List<FieldTypeWithHints> getFieldTypesForAutofillHints(List<String> autofillHints) {
-        return mCapDao.getFieldTypesForAutofillHints(autofillHints);
+        return mEDSDao.getFieldTypesForAutofillHints(autofillHints);
     }
-
-    @Override
-    public void clear() {
-        mAppExecutors.diskIO().execute(() -> {
-            mCapDao.clearAll();
-            mSharedPreferences.edit().putInt(DATASET_NUMBER_KEY, 0).apply();
-        });
-    }
-
-    /**
-     * For simplicity, {@link Dataset}s will be named in the form {@code dataset-X.P} where
-     * {@code X} means this was the Xth group of datasets saved, and {@code P} refers to the dataset
-     * partition number. This method returns the appropriate {@code X}.
-     */
-    public int getDatasetNumber() {
-        return mSharedPreferences.getInt(DATASET_NUMBER_KEY, 0);
-    }
-
-    /**
-     * Every time a dataset is saved, this should be called to increment the dataset number.
-     * (only important for this service's dataset naming scheme).
-     */
-    private void incrementDatasetNumber() {
-        mSharedPreferences.edit().putInt(DATASET_NUMBER_KEY, getDatasetNumber() + 1).apply();
-    }
+//
+//    @Override
+//    public void clear() {
+//        mAppExecutors.diskIO().execute(() -> {
+//            mCapDao.clearAll();
+//            mSharedPreferences.edit().putInt(DATASET_NUMBER_KEY, 0).apply();
+//        });
+//    }
+//
+//    /**
+//     * For simplicity, {@link Dataset}s will be named in the form {@code dataset-X.P} where
+//     * {@code X} means this was the Xth group of datasets saved, and {@code P} refers to the dataset
+//     * partition number. This method returns the appropriate {@code X}.
+//     */
+//    public int getDatasetNumber() {
+//        return mSharedPreferences.getInt(DATASET_NUMBER_KEY, 0);
+//    }
+//
+//    /**
+//     * Every time a dataset is saved, this should be called to increment the dataset number.
+//     * (only important for this service's dataset naming scheme).
+//     */
+//    private void incrementDatasetNumber() {
+//        mSharedPreferences.edit().putInt(DATASET_NUMBER_KEY, getDatasetNumber() + 1).apply();
+//    }
 }

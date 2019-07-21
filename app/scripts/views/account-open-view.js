@@ -15,6 +15,7 @@ const InputFx = require('../util/input-fx');
 const Comparators = require('../util/comparators');
 const Storage = require('../storage');
 const KPRPCHandler = require('../comp/keepassrpc');
+const NativeCache = require('../comp/nativeCache');
 const KeeError = require('../comp/kee-error');
 const FileInfoCollection = require('../collections/file-info-collection');
 const AppSettingsModel = require('../models/app-settings-model');
@@ -832,6 +833,9 @@ const OpenView = Backbone.View.extend({
         } else {
             this.trigger('close');
         }
+        // TODO: Check it's OK for this to be called here, where list of open DBs may be empty. Potentially call in above else block instead? May lead to old user's cached data remaining locally unless other clearance approach used though.
+        NativeCache.update(this.model);
+
         Backbone.trigger('progress-open-end');
     },
 

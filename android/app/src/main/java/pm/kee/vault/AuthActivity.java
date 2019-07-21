@@ -41,7 +41,7 @@ import pm.kee.vault.data.ClientViewMetadataBuilder;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.data.adapter.DatasetAdapter;
 import pm.kee.vault.data.adapter.ResponseAdapter;
-import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
+import pm.kee.vault.data.source.local.ESPAutofillDataSource;
 import pm.kee.vault.data.source.local.DigitalAssetLinksRepository;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldTypeWithHints;
@@ -64,7 +64,7 @@ public class AuthActivity extends AppCompatActivity {
     // Unique id for dataset intents.
     private static int sDatasetPendingIntentId = 0;
 
-    private CapacitorAutofillDataSource mCapacitorAutofillDataSource;
+    private ESPAutofillDataSource mESPAutofillDataSource;
     private DigitalAssetLinksRepository mDalRepository;
     private EditText mMasterPassword;
     private DatasetAdapter mDatasetAdapter;
@@ -93,11 +93,11 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.multidataset_service_auth_activity);
         SharedPreferences sharedPreferences =
-                getSharedPreferences(CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
+                getSharedPreferences(ESPAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
 //        AutofillDao autofillDao = AutofillDatabase.getInstance(this,
 //                defaultFieldTypesSource, new AppExecutors()).autofillDao();
-        mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(sharedPreferences,
-                new AppExecutors());
+//        mESPAutofillDataSource = ESPAutofillDataSource.getInstance(sharedPreferences,
+//                new AppExecutors());
         mDalRepository = DigitalAssetLinksRepository.getInstance(getPackageManager());
         mMasterPassword = findViewById(R.id.master_password);
         mPackageName = getPackageName();
@@ -140,7 +140,7 @@ public class AuthActivity extends AppCompatActivity {
         AssistStructure structure = intent.getParcelableExtra(EXTRA_ASSIST_STRUCTURE);
         ClientParser clientParser = new ClientParser(structure);
         mReplyIntent = new Intent();
-        mCapacitorAutofillDataSource.getFieldTypeByAutofillHints(
+        mESPAutofillDataSource.getFieldTypeByAutofillHints(
                 new DataCallback<HashMap<String, FieldTypeWithHints>>() {
             @Override
             public void onLoaded(HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
@@ -167,7 +167,7 @@ public class AuthActivity extends AppCompatActivity {
 
     private void fetchDatasetAndSetIntent(
             HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint, String datasetName) {
-        mCapacitorAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
+        mESPAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
                 datasetName, new DataCallback<DatasetWithFilledAutofillFields>() {
                     @Override
                     public void onLoaded(DatasetWithFilledAutofillFields dataset) {
@@ -189,7 +189,7 @@ public class AuthActivity extends AppCompatActivity {
 
     private void fetchAllDatasetsAndSetIntent(
             HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
-        mCapacitorAutofillDataSource.getAutofillDatasets("bullshit url 2",
+        mESPAutofillDataSource.getAutofillDatasets("bullshit url 2",
                 new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                     @Override
                     public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {

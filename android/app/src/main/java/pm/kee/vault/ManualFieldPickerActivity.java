@@ -35,7 +35,7 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import pm.kee.vault.data.DataCallback;
-import pm.kee.vault.data.source.local.CapacitorAutofillDataSource;
+import pm.kee.vault.data.source.local.ESPAutofillDataSource;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FilledAutofillField;
 import pm.kee.vault.util.AppExecutors;
@@ -47,7 +47,7 @@ public class ManualFieldPickerActivity extends AppCompatActivity {
     public static final String EXTRA_SELECTED_FIELD_DATASET_ID = "selected_field_dataset_id";
     public static final String EXTRA_SELECTED_FIELD_TYPE_NAME = "selected_field_type_name";
 
-    private CapacitorAutofillDataSource mCapacitorAutofillDataSource;
+    private ESPAutofillDataSource mESPAutofillDataSource;
 
     private RecyclerView mRecyclerView;
     private TextView mListTitle;
@@ -64,27 +64,27 @@ public class ManualFieldPickerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_field_picker);
         SharedPreferences sharedPreferences = getSharedPreferences(
-                CapacitorAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
+                ESPAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
         String datasetId = getIntent().getStringExtra(EXTRA_DATASET_ID);
         mRecyclerView = findViewById(R.id.fieldsList);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, VERTICAL));
         mListTitle = findViewById(R.id.listTitle);
-        mCapacitorAutofillDataSource = CapacitorAutofillDataSource.getInstance(sharedPreferences, new AppExecutors());
-        mCapacitorAutofillDataSource.getAutofillDatasetWithId(datasetId,
-                new DataCallback<DatasetWithFilledAutofillFields>() {
-                    @Override
-                    public void onLoaded(DatasetWithFilledAutofillFields dataset) {
-                        mDataset = dataset;
-                        if (mDataset != null) {
-                            onLoadedDataset();
-                        }
-                    }
-
-                    @Override
-                    public void onDataNotAvailable(String msg, Object... params) {
-
-                    }
-                });
+//        mESPAutofillDataSource = ESPAutofillDataSource.getInstance(sharedPreferences, new AppExecutors());
+//        mESPAutofillDataSource.getAutofillDatasetWithId(datasetId,
+//                new DataCallback<DatasetWithFilledAutofillFields>() {
+//                    @Override
+//                    public void onLoaded(DatasetWithFilledAutofillFields dataset) {
+//                        mDataset = dataset;
+//                        if (mDataset != null) {
+//                            onLoadedDataset();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onDataNotAvailable(String msg, Object... params) {
+//
+//                    }
+//                });
     }
 
     public void onSelectedDataset(FilledAutofillField field) {

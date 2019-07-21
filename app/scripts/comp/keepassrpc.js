@@ -223,7 +223,7 @@ const integration = {
 };
 
 const KPRPCHandler = {
-    tempimp: null,
+//    tempimp: null,
 
     init: function (appV) {
         app = appV.model;
@@ -258,7 +258,10 @@ const KPRPCHandler = {
         kprpc.shutdown();
     },
     sendServiceAccessTokens,
-    applyAddonConfig
+    applyAddonConfig,
+    invokeLocal: {
+        getAllDatabases: (fullDetails) => kprpc.GetAllDatabases(fullDetails)
+    }
 };
 
 module.exports = KPRPCHandler;
