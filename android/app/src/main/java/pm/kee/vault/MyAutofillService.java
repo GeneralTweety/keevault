@@ -19,6 +19,9 @@ import android.app.assist.AssistStructure;
 import android.content.Context;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.CancellationSignal;
 import android.service.autofill.AutofillService;
 import android.service.autofill.FillCallback;
@@ -51,6 +54,7 @@ import pm.kee.vault.model.DalInfo;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.util.AppExecutors;
+import pm.kee.vault.util.SecurityHelper;
 import pm.kee.vault.util.Util;
 
 import static java.util.stream.Collectors.toList;
@@ -83,11 +87,17 @@ public class MyAutofillService extends AutofillService {
     @Override
     public void onFillRequest(@NonNull FillRequest request,
                               @NonNull CancellationSignal cancellationSignal, @NonNull FillCallback callback) {
+        ApplicationInfo appInfo = getApplicationInfo();
         List<FillContext> fillContexts = request.getFillContexts();
         List<AssistStructure> structures =
                 fillContexts.stream().map(FillContext::getStructure).collect(toList());
         AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
         ClientParser parser = new ClientParser(structures);
+        String packageName = latestStructure.getActivityComponent().getPackageName();
+        if (packageName.equals(appInfo.packageName)) {
+            callback.onFailure("Can't auto fill ourself");
+            return;
+        }
 
         // Check user's settings for authenticating Responses and Datasets.
         //TODO: should depend upon whether capacitor link tells us user is already authenticated or not, as well as any settings in there such as using just a fingerprint?
@@ -104,7 +114,6 @@ public class MyAutofillService extends AutofillService {
                         mClientViewMetadata = clientViewMetadataBuilder.buildClientViewMetadata();
                         mResponseAdapter = new ResponseAdapter(MyAutofillService.this,
                                 mClientViewMetadata, getPackageName(), datasetAdapter);
-                        String packageName = latestStructure.getActivityComponent().getPackageName();
                         if (!mPackageVerificationRepository.putPackageSignatures(packageName)) {
                             callback.onFailure(getString(R.string.invalid_package_signature));
                             return;
@@ -262,7 +271,6 @@ public class MyAutofillService extends AutofillService {
         SharedPreferences localAfDataSourceSharedPrefs =
                 getSharedPreferences(ESPAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
         EncryptedDataStorage storage = new EncryptedDataStorage(localAfDataSourceSharedPrefs);
-        storage.useMostRecentKey();
         mESPAutofillDataSource = ESPAutofillDataSource.getInstance(storage,
                 new AppExecutors());
     }

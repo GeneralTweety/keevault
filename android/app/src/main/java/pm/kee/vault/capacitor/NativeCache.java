@@ -33,8 +33,7 @@ public class NativeCache extends Plugin {
         SharedPreferences localAfDataSourceSharedPrefs =
                 this.getContext().getSharedPreferences(ESPAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
         EncryptedDataStorage storage = new EncryptedDataStorage(localAfDataSourceSharedPrefs);
-        storage.setKey(id);
-        storage.setJSON(message.toString()); //TODO: check some stuff and preprocess it before saving - at least check some sort of version number so we can ignore if shit gets out of sync somehow.
+        storage.setJSON(id, message.toString()); //TODO: check some stuff and preprocess it before saving - at least check some sort of version number so we can ignore if shit gets out of sync somehow.
         call.success();
     }
 }

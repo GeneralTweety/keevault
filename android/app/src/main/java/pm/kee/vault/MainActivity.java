@@ -1,6 +1,7 @@
 package pm.kee.vault;
 
 import android.os.Bundle;
+import android.view.View;
 
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
@@ -21,6 +22,9 @@ public class MainActivity extends BridgeActivity {
       // Ex: add(TotallyAwesomePlugin.class);
       add(NativeCache.class);
     }});
+    View webview = findViewById(R.id.webview);
+    webview.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+
   }
 
 //  public NativeCachePlugin getPlugin() {

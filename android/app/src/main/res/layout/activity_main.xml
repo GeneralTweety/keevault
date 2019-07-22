@@ -9,6 +9,6 @@
     <WebView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:importantForAutofill="noExcludeDescendants"
-        tools:targetApi="o"/>
+        android:importantForAutofill="no"
+        tools:targetApi="o" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
