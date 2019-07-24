@@ -34,8 +34,10 @@ import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
 import pm.kee.vault.model.FieldTypeWithHints;
 import pm.kee.vault.model.FilledAutofillField;
+import pm.kee.vault.model.vault.Entry;
 import pm.kee.vault.util.AppExecutors;
 
+import static pm.kee.vault.data.MatchFieldsKt.matchFields;
 import static pm.kee.vault.util.Util.logw;
 
 public class ESPAutofillDataSource implements AutofillDataSource {
@@ -73,15 +75,15 @@ public class ESPAutofillDataSource implements AutofillDataSource {
     }
 
     @Override
-    public void getAutofillDatasets(String url, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
+    public void getAutofillDatasets(String url, ClientViewMetadata clientViewMetadata, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
         mAppExecutors.diskIO().execute(() -> {
 //            final List<String> typeNames = getFieldTypesForAutofillHints(allAutofillHints)
 //                    .stream()
 //                    .map((u) -> u.fieldType)
 //                    .map(FieldType::getTypeName)
 //                    .collect(Collectors.toList());
-            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
-                    mEDSDao.getDatasets(url);
+            List<Entry> matchedEntries = mEDSDao.getMatchingEntries(url);
+            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata);
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );

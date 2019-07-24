@@ -30,7 +30,7 @@ public interface AutofillDataSource {
      * Asynchronously gets saved list of {@link DatasetWithFilledAutofillFields} that contains some
      * objects that can autofill fields with these {@code autofillHints}.
      */
-    void getAutofillDatasets(String url,
+    void getAutofillDatasets(String url, mClientViewMetadata,
             DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback);
 
     void getAllAutofillDatasets(

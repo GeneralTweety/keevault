@@ -10,6 +10,7 @@ import pm.kee.vault.model.DatasetWithFilledAutofillFields
 import pm.kee.vault.model.FieldType
 import pm.kee.vault.model.FieldTypeWithHints
 import pm.kee.vault.model.FilledAutofillField
+import pm.kee.vault.model.vault.Entry
 import pm.kee.vault.model.vault.KeeVaultState
 
 class EDSDao(private val eds: EncryptedDataStorage) {
@@ -34,31 +35,31 @@ class EDSDao(private val eds: EncryptedDataStorage) {
 //                    }
 //                }
 //        )
-
-    fun getAllDatasets() : List<DatasetWithFilledAutofillFields>
-        {
-            var gson = Gson()
-//            var jsonString = gson.toJson(TestModel(1,"Test"))
-            val json = eds.getJSON()
-            var testModel = gson.fromJson(json, KeeVaultState::class.java)
-            return Arrays.asList(object : DatasetWithFilledAutofillFields() {
-            init {
-                filledAutofillFields = Arrays.asList(
-                        FilledAutofillField("1", "username", "my username 1"),
-                        FilledAutofillField("1", "password", "my password 1"))
-                autofillDataset = AutofillDataset("1", "2", "3")
-            }
-        },
-                object : DatasetWithFilledAutofillFields() {
-                    init {
-                        filledAutofillFields = Arrays.asList(
-                                FilledAutofillField("2", "username", "my username 2"),
-                                FilledAutofillField("2", "password", "my password 2"))
-                        autofillDataset = AutofillDataset("2", "4", "5")
-                    }
-                }
-        )
-        }
+//
+//    private fun getAllDatasets() : List<DatasetWithFilledAutofillFields>
+//        {
+//            var gson = Gson()
+////            var jsonString = gson.toJson(TestModel(1,"Test"))
+//            val json = eds.getJSON()
+//            var testModel = gson.fromJson(json, KeeVaultState::class.java)
+//            return Arrays.asList(object : DatasetWithFilledAutofillFields() {
+//            init {
+//                filledAutofillFields = Arrays.asList(
+//                        FilledAutofillField("1", "username", "my username 1"),
+//                        FilledAutofillField("1", "password", "my password 1"))
+//                autofillDataset = AutofillDataset("1", "2", "3")
+//            }
+//        },
+//                object : DatasetWithFilledAutofillFields() {
+//                    init {
+//                        filledAutofillFields = Arrays.asList(
+//                                FilledAutofillField("2", "username", "my username 2"),
+//                                FilledAutofillField("2", "password", "my password 2"))
+//                        autofillDataset = AutofillDataset("2", "4", "5")
+//                    }
+//                }
+//        )
+//        }
 
     //TODO: probably want to match on email hints too and get rid of below type?
     //return null;
@@ -93,8 +94,12 @@ class EDSDao(private val eds: EncryptedDataStorage) {
      * @param allAutofillHints Filtering parameter; represents all of the hints associated with
      * all of the views on the page.
      */
-    fun getDatasets(url: String): List<DatasetWithFilledAutofillFields> {
-        return getAllDatasets()
+    fun getMatchingEntries(url: String): List<Entry> {
+        var gson = Gson()
+        val json = eds.getJSON()
+        var model = gson.fromJson(json, KeeVaultState::class.java)
+        val matchedEntries = listOf(model.vault?.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs and configs to produce list
+        return matchedEntries
     }
 
     /**
