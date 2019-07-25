@@ -151,7 +151,7 @@ public class MyAutofillService extends AutofillService {
                 callback.onSuccess(response);
             }
         } else {
-            mESPAutofillDataSource.getAutofillDatasets("bullshit url", mClientViewMetadata,
+            mESPAutofillDataSource.getAutofillDatasets(mClientViewMetadata,
                     new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                         @Override
                         public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {

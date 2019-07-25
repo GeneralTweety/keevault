@@ -96,19 +96,19 @@ public class ManualActivity extends AppCompatActivity {
         mPackageName = getPackageName();
         mRecyclerView = findViewById(R.id.suggestionsList);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, RecyclerView.VERTICAL));
-        mESPAutofillDataSource.getAllAutofillDatasets(
-                new DataCallback<List<DatasetWithFilledAutofillFields>>() {
-                    @Override
-                    public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
-                        mAllDatasets = datasets;
-                        buildAdapter();
-                    }
-
-                    @Override
-                    public void onDataNotAvailable(String msg, Object... params) {
-
-                    }
-                });
+//        mESPAutofillDataSource.getAllAutofillDatasets(
+//                new DataCallback<List<DatasetWithFilledAutofillFields>>() {
+//                    @Override
+//                    public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
+//                        mAllDatasets = datasets;
+//                        buildAdapter();
+//                    }
+//
+//                    @Override
+//                    public void onDataNotAvailable(String msg, Object... params) {
+//
+//                    }
+//                });
     }
 
     private void buildAdapter() {

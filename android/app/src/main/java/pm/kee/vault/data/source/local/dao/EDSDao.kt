@@ -94,27 +94,27 @@ class EDSDao(private val eds: EncryptedDataStorage) {
      * @param allAutofillHints Filtering parameter; represents all of the hints associated with
      * all of the views on the page.
      */
-    fun getMatchingEntries(url: String): List<Entry> {
+    fun getMatchingEntries(url: String, isHTTPS: Boolean?): List<Entry> {
         var gson = Gson()
         val json = eds.getJSON()
         var model = gson.fromJson(json, KeeVaultState::class.java)
-        val matchedEntries = listOf(model.vault?.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs and configs to produce list
+        val matchedEntries = listOf(model.vault?.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs, whether we know it should be https, and configs to produce list
         return matchedEntries
     }
-
-    /**
-     * Fetches a list of datasets associated to autofill fields. It should only return a dataset
-     * if that dataset has an autofill field associate with the view the user is focused on, and
-     * if that dataset's name matches the name passed in.
-     *
-     * @param fieldTypes  Filtering parameter; represents all of the field types associated with
-     * all of the views on the page.
-     * @param datasetName Filtering parameter; only return datasets with this name.
-     */
-    fun getDatasetsWithName(
-            fieldTypes: List<String>, datasetName: String): List<DatasetWithFilledAutofillFields> {
-        return getAllDatasets()
-    }
+//
+//    /**
+//     * Fetches a list of datasets associated to autofill fields. It should only return a dataset
+//     * if that dataset has an autofill field associate with the view the user is focused on, and
+//     * if that dataset's name matches the name passed in.
+//     *
+//     * @param fieldTypes  Filtering parameter; represents all of the field types associated with
+//     * all of the views on the page.
+//     * @param datasetName Filtering parameter; only return datasets with this name.
+//     */
+//    fun getDatasetsWithName(
+//            fieldTypes: List<String>, datasetName: String): List<DatasetWithFilledAutofillFields> {
+//        return getMatchingEntries("bullshit", null)
+//    }
 
     fun getFieldTypesForAutofillHints(autofillHints: List<String>): List<FieldTypeWithHints> {
         return fieldTypesWithHints.filter { f -> f.autofillHints.any { h1 -> autofillHints.any { h2 -> h2 === h1.mFieldTypeName } } }

@@ -51,6 +51,7 @@ import static android.view.autofill.AutofillManager.EXTRA_ASSIST_STRUCTURE;
 import static android.view.autofill.AutofillManager.EXTRA_AUTHENTICATION_RESULT;
 import static pm.kee.vault.util.Util.EXTRA_DATASET_NAME;
 import static pm.kee.vault.util.Util.EXTRA_FOR_RESPONSE;
+import static pm.kee.vault.util.Util.loge;
 import static pm.kee.vault.util.Util.logw;
 
 // TODO: Replace UI with calls to Capacitor in whatever way that is possible
@@ -153,8 +154,9 @@ public class AuthActivity extends AppCompatActivity {
                 if (forResponse) {
                     fetchAllDatasetsAndSetIntent(fieldTypesByAutofillHint);
                 } else {
-                    String datasetName = intent.getStringExtra(EXTRA_DATASET_NAME);
-                    fetchDatasetAndSetIntent(fieldTypesByAutofillHint, datasetName);
+                    loge("Fuck knows what this is supposed to do");
+//                    String datasetName = intent.getStringExtra(EXTRA_DATASET_NAME);
+//                    fetchDatasetAndSetIntent(fieldTypesByAutofillHint, datasetName);
                 }
             }
 
@@ -164,32 +166,32 @@ public class AuthActivity extends AppCompatActivity {
             }
         });
     }
-
-    private void fetchDatasetAndSetIntent(
-            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint, String datasetName) {
-        mESPAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
-                datasetName, new DataCallback<DatasetWithFilledAutofillFields>() {
-                    @Override
-                    public void onLoaded(DatasetWithFilledAutofillFields dataset) {
-                        String datasetName = dataset.autofillDataset.getDatasetName();
-                        RemoteViews remoteViews = RemoteViewsHelper.viewsWithNoAuth(
-                                mPackageName, datasetName);
-                        setDatasetIntent(mDatasetAdapter.buildDataset(fieldTypesByAutofillHint,
-                                dataset, remoteViews));
-                        finish();
-                    }
-
-                    @Override
-                    public void onDataNotAvailable(String msg, Object... params) {
-                        logw(msg, params);
-                        finish();
-                    }
-                });
-    }
+//
+//    private void fetchDatasetAndSetIntent(
+//            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint, String datasetName) {
+//        mESPAutofillDataSource.getAutofillDataset(mClientViewMetadata.getAllHints(),
+//                datasetName, new DataCallback<DatasetWithFilledAutofillFields>() {
+//                    @Override
+//                    public void onLoaded(DatasetWithFilledAutofillFields dataset) {
+//                        String datasetName = dataset.autofillDataset.getDatasetName();
+//                        RemoteViews remoteViews = RemoteViewsHelper.viewsWithNoAuth(
+//                                mPackageName, datasetName);
+//                        setDatasetIntent(mDatasetAdapter.buildDataset(fieldTypesByAutofillHint,
+//                                dataset, remoteViews));
+//                        finish();
+//                    }
+//
+//                    @Override
+//                    public void onDataNotAvailable(String msg, Object... params) {
+//                        logw(msg, params);
+//                        finish();
+//                    }
+//                });
+//    }
 
     private void fetchAllDatasetsAndSetIntent(
             HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
-        mESPAutofillDataSource.getAutofillDatasets("bullshit url 2",
+        mESPAutofillDataSource.getAutofillDatasets(mClientViewMetadata,
                 new DataCallback<List<DatasetWithFilledAutofillFields>>() {
                     @Override
                     public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {

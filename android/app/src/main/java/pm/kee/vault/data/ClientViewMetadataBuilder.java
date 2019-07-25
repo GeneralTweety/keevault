@@ -16,18 +16,36 @@
 
 package pm.kee.vault.data;
 
-
 import android.app.assist.AssistStructure;
+import android.os.Build;
 import android.util.MutableInt;
+import android.util.Pair;
+import android.view.View;
+import android.view.ViewStructure;
 import android.view.autofill.AutofillId;
+
+import com.google.common.base.Strings;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import pm.kee.vault.ClientParser;
+import pm.kee.vault.model.ClientField;
+import pm.kee.vault.model.FieldType;
 import pm.kee.vault.model.FieldTypeWithHints;
 
+import static android.text.InputType.TYPE_CLASS_TEXT;
+import static android.text.InputType.TYPE_NULL;
+import static android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+import static android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
+import static android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
+import static android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+import static android.text.InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT;
+import static android.text.InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS;
+import static android.text.InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD;
 import static pm.kee.vault.util.Util.logd;
 
 public class ClientViewMetadataBuilder {
@@ -46,15 +64,17 @@ public class ClientViewMetadataBuilder {
         List<AutofillId> autofillIds = new ArrayList<>();
         StringBuilder webDomainBuilder = new StringBuilder();
         List<AutofillId> focusedAutofillIds = new ArrayList<>();
-        mClientParser.parse((node) -> parseNode(node, allHints, saveType, autofillIds, focusedAutofillIds));
-        mClientParser.parse((node) -> parseWebDomain(node, webDomainBuilder));
+        List<ClientField> clientFields = new ArrayList<>();
+        Boolean isHTTPS = null;
+        mClientParser.parse((node) -> parseNode(node, allHints, saveType, autofillIds, focusedAutofillIds, clientFields));
+        mClientParser.parse((node) -> parseWebDomain(node, webDomainBuilder, isHTTPS));
         String webDomain = webDomainBuilder.toString();
         AutofillId[] autofillIdsArray = autofillIds.toArray(new AutofillId[autofillIds.size()]);
         AutofillId[] focusedIds = focusedAutofillIds.toArray(new AutofillId[focusedAutofillIds.size()]);
-        return new ClientViewMetadata(allHints, saveType.value, autofillIdsArray, focusedIds, webDomain);
+        return new ClientViewMetadata(allHints, saveType.value, autofillIdsArray, focusedIds, webDomain, clientFields, isHTTPS);
     }
 
-    private void parseWebDomain(AssistStructure.ViewNode viewNode, StringBuilder validWebDomain) {
+    private void parseWebDomain(AssistStructure.ViewNode viewNode, StringBuilder validWebDomain, Boolean isHTTPS) {
         String webDomain = viewNode.getWebDomain();
         if (webDomain != null) {
             logd("child web domain: %s", webDomain);
@@ -66,61 +86,161 @@ public class ClientViewMetadataBuilder {
             } else {
                 validWebDomain.append(webDomain);
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                isHTTPS = viewNode.getWebScheme().equals("https") ? true : false;
+            }
+
         }
     }
 
-    private void parseNode(AssistStructure.ViewNode root, List<String> allHints,
-            MutableInt autofillSaveType, List<AutofillId> autofillIds,
-            List<AutofillId> focusedAutofillIds) {
-        String[] hints = root.getAutofillHints();
+    private void parseNode(AssistStructure.ViewNode node, List<String> allHints,
+                           MutableInt autofillSaveType, List<AutofillId> autofillIds,
+                           List<AutofillId> focusedAutofillIds, List<ClientField> clientFields) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            int important = node.getImportantForAutofill();
+            if (important == View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS ||
+                    important == View.IMPORTANT_FOR_AUTOFILL_NO) {
+                return;
+            }
+        }
+
+        String htmlId = null;
+        String htmlType = null;
+        String htmlName = null;
+        String htmlValue;
+        String htmlClass;
+        String htmlAutocomplete;
+        ViewStructure.HtmlInfo htmlInfo = node.getHtmlInfo();
+        if (htmlInfo != null) {
+            if (htmlInfo.getTag() != "input") return; //TODO: support SELECT and maybe others?
+            List<Pair<String, String>> attrs = htmlInfo.getAttributes();
+            for (Pair<String, String> p : attrs) {
+                switch (p.first) {
+                    case "id": htmlId = p.second; break;
+                    case "type": htmlType = evaluateHtmlType(p.second); break;
+                    case "name": htmlName = p.second; break;
+                    case "value": htmlValue = p.second; break;
+                    case "class": htmlClass = p.second; break;
+                    case "autocomplete": htmlAutocomplete = p.second; break;
+                }
+            }
+        }
+
+        String[] hints = node.getAutofillHints();
+        ArrayList<FieldTypeWithHints> typesFromHints = new ArrayList<>();
         if (hints != null) {
             for (String hint : hints) {
                 FieldTypeWithHints fieldTypeWithHints = mFieldTypesByAutofillHint.get(hint);
                 if (fieldTypeWithHints != null && fieldTypeWithHints.fieldType != null) {
                     allHints.add(hint);
                     autofillSaveType.value |= fieldTypeWithHints.fieldType.getSaveInfo();
-                    autofillIds.add(root.getAutofillId());
+                    typesFromHints.add(fieldTypeWithHints);
                 }
             }
         }
-        if (root.isFocused()) {
-            focusedAutofillIds.add(root.getAutofillId());
+        if (node.isFocused()) {
+            focusedAutofillIds.add(node.getAutofillId());
         }
-/*
-        getHtmlInfo().getAttributes() // id, class, type, etc
-        getImportantForAutofill() // ignore all View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS and View.IMPORTANT_FOR_AUTOFILL_NO
 
-        getInputType() //
+        String hintType = evaluateHintType(typesFromHints);
+        String inputType = evaluateInputType(node.getInputType());
+        String likelyType = determineType(htmlType, hintType, inputType);
+        if (!likelyType.equals("text") && !likelyType.equals("password")) {
+            return; // TODO: Support OTP and maybe other field types?
+        }
 
-username/text:
-TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_NORMAL
-TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_WEB_EDIT_TEXT
-TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS
+        // TODO: node.getMaxTextLength() (API 28) and/or html maxlength attributes
 
-password:
-TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD
-TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_WEB_PASSWORD
+        ClientField field = new ClientField(node.getAutofillId(), likelyType, htmlId, htmlName, node.getVisibility() == View.VISIBLE);
+        clientFields.add(field);
+        autofillIds.add(node.getAutofillId());
+    }
 
+    private String evaluateHtmlType(String t) {
+        switch (t) {
+            case "password":
+                return "password";
+            case "checkbox":
+            case "select-one":
+            case "radio":
+            case "hidden":
+            case "submit":
+            case "button":
+            case "file":
+            case "image":
+            case "reset":
+                return "other";
+            default:
+                return "text";
+        }
+    }
+
+    private String evaluateHintType(ArrayList<FieldTypeWithHints> typesFromHints) {
+        String hintType = null;
+        for (FieldTypeWithHints t : typesFromHints) {
+            if (t.fieldType.getTypeName().equals("new-password") || t.fieldType.getTypeName().equals("password")) {
+                // do a thing
+                if (hintType != null && !hintType.equals("password")) {
+                    hintType = null; // inconsistent hints from View so must ignore
+                    break;
+                }
+                hintType = "password";
+            } else if (t.fieldType.getTypeName().equals("emailAddress") || t.fieldType.getTypeName().equals("name")
+                    || t.fieldType.getTypeName().equals("username")) {
+                // do a thing
+                if (hintType != null && !hintType.equals("text")) {
+                    hintType = null; // inconsistent hints from View so must ignore
+                    break;
+                }
+                hintType = "text";
+            }
+        }
+        return hintType;
+    }
+
+    private String determineType (String htmlType, String hintType, String inputType) {
+        if (!Strings.isNullOrEmpty(hintType)) {
+            return hintType;
+        }
+        if (!Strings.isNullOrEmpty((inputType)) && !inputType.equals("unknown")) {
+            return inputType;
+        }
+        if (!Strings.isNullOrEmpty(htmlType)) {
+            return htmlType;
+        }
+        return "unknown";
+    }
+
+    private String evaluateInputType (Integer inputType) {
+
+        switch (inputType) {
+            case TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
+            case TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_NORMAL:
+            case TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_WEB_EDIT_TEXT:
+            case TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS:
+                return "text";
+            case TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_VISIBLE_PASSWORD:
+            case TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD:
+            case TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_WEB_PASSWORD:
+                return "password";
+            case TYPE_NULL:
+                return "unknown";
+        }
+        return "other";
+        /*
 OTP?:
 TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_NORMAL
 TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_PASSWORD
 
-TYPE_NULL (unknown)
-
-post-MVP maybe want to implement a blacklist:
+post-MVP maybe want to implement a blacklist to treat more aggressively than "other":
 TYPE_CLASS_TEXT | TYPE_TEXT_FLAG_MULTI_LINE
 TYPE_CLASS_TEXT | TYPE_TEXT_FLAG_IME_MULTI_LINE
 TYPE_CLASS_TEXT | TYPE_TEXT_FLAG_AUTO_COMPLETE
 TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_FILTER
 TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_SUBJECT
 TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_POSTAL_ADDRESS
-
-        getMaxTextLength() // integer
-        getVisibility() // VISIBLE
-        getWebScheme() // Pie only
-
-*/
+         */
     }
 }

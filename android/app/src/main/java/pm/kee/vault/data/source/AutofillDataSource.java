@@ -18,6 +18,7 @@ package pm.kee.vault.data.source;
 import java.util.HashMap;
 import java.util.List;
 
+import pm.kee.vault.data.ClientViewMetadata;
 import pm.kee.vault.data.DataCallback;
 import pm.kee.vault.model.DatasetWithFilledAutofillFields;
 import pm.kee.vault.model.FieldType;
@@ -30,19 +31,19 @@ public interface AutofillDataSource {
      * Asynchronously gets saved list of {@link DatasetWithFilledAutofillFields} that contains some
      * objects that can autofill fields with these {@code autofillHints}.
      */
-    void getAutofillDatasets(String url, mClientViewMetadata,
+    void getAutofillDatasets(ClientViewMetadata clientViewMetadata,
             DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback);
-
-    void getAllAutofillDatasets(
-            DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback);
-
-    /**
-     * Asynchronously gets a saved {@link DatasetWithFilledAutofillFields} for a specific
-     * {@code datasetName} that contains some objects that can autofill fields with these
-     * {@code autofillHints}.
-     */
-    void getAutofillDataset(List<String> allAutofillHints,
-            String datasetName, DataCallback<DatasetWithFilledAutofillFields> datasetsCallback);
+//
+//    void getAllAutofillDatasets(
+//            DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback);
+//
+//    /**
+//     * Asynchronously gets a saved {@link DatasetWithFilledAutofillFields} for a specific
+//     * {@code datasetName} that contains some objects that can autofill fields with these
+//     * {@code autofillHints}.
+//     */
+//    void getAutofillDataset(List<String> allAutofillHints,
+//            String datasetName, DataCallback<DatasetWithFilledAutofillFields> datasetsCallback);
 
     /**
      * Stores a collection of Autofill fields.

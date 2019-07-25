@@ -22,6 +22,8 @@ import android.view.autofill.AutofillId;
 import java.util.Arrays;
 import java.util.List;
 
+import pm.kee.vault.model.ClientField;
+
 /**
  * In this simple implementation, the only view data we collect from the client are autofill hints
  * of the views in the view hierarchy, the corresponding autofill IDs, and the {@link SaveInfo}
@@ -33,14 +35,19 @@ public class ClientViewMetadata {
     private final AutofillId[] mAutofillIds;
     private final String mWebDomain;
     private final AutofillId[] mFocusedIds;
+    private final List<ClientField> mClientFields;
+    private final Boolean mIsHTTPS;
 
     public ClientViewMetadata(List<String> allHints, int saveType, AutofillId[] autofillIds,
-            AutofillId[] focusedIds, String webDomain) {
+                              AutofillId[] focusedIds, String webDomain,
+                              List<ClientField> clientFields, Boolean isHTTPS) {
         mAllHints = allHints;
         mSaveType = saveType;
         mAutofillIds = autofillIds;
         mWebDomain = webDomain;
         mFocusedIds = focusedIds;
+        mClientFields = clientFields;
+        mIsHTTPS = isHTTPS;
     }
 
     public List<String> getAllHints() {
@@ -61,6 +68,14 @@ public class ClientViewMetadata {
 
     public String getWebDomain() {
         return mWebDomain;
+    }
+
+    public List<ClientField> getClientFields() {
+        return mClientFields;
+    }
+
+    public Boolean getIsHTTPS() {
+        return mIsHTTPS;
     }
 
     @Override public String toString() {

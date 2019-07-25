@@ -75,56 +75,56 @@ public class ESPAutofillDataSource implements AutofillDataSource {
     }
 
     @Override
-    public void getAutofillDatasets(String url, ClientViewMetadata clientViewMetadata, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
+    public void getAutofillDatasets(ClientViewMetadata clientViewMetadata, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
         mAppExecutors.diskIO().execute(() -> {
 //            final List<String> typeNames = getFieldTypesForAutofillHints(allAutofillHints)
 //                    .stream()
 //                    .map((u) -> u.fieldType)
 //                    .map(FieldType::getTypeName)
 //                    .collect(Collectors.toList());
-            List<Entry> matchedEntries = mEDSDao.getMatchingEntries(url);
+            List<Entry> matchedEntries = mEDSDao.getMatchingEntries(clientViewMetadata.getWebDomain(), clientViewMetadata.getIsHTTPS());
             List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata);
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );
         });
     }
-
-    @Override
-    public void getAllAutofillDatasets(
-            DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
-        mAppExecutors.diskIO().execute(() -> {
-            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
-                    mEDSDao.getAllDatasets();
-            mAppExecutors.mainThread().execute(() ->
-                    datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
-            );
-        });
-    }
-
-    @Override
-    public void getAutofillDataset(List<String> allAutofillHints, String datasetName,
-            DataCallback<DatasetWithFilledAutofillFields> datasetsCallback) {
-        mAppExecutors.diskIO().execute(() -> {
-            // Room does not support TypeConverters for collections.
-            List<DatasetWithFilledAutofillFields> autofillDatasetFields =
-                    mEDSDao.getDatasetsWithName(allAutofillHints, datasetName);
-            if (autofillDatasetFields != null && !autofillDatasetFields.isEmpty()) {
-                if (autofillDatasetFields.size() > 1) {
-                    logw("More than 1 dataset with name %s", datasetName);
-                }
-                DatasetWithFilledAutofillFields dataset = autofillDatasetFields.get(0);
-
-                mAppExecutors.mainThread().execute(() ->
-                        datasetsCallback.onLoaded(dataset)
-                );
-            } else {
-                mAppExecutors.mainThread().execute(() ->
-                        datasetsCallback.onDataNotAvailable("No data found.")
-                );
-            }
-        });
-    }
+//
+//    @Override
+//    public void getAllAutofillDatasets(
+//            DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
+//        mAppExecutors.diskIO().execute(() -> {
+//            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields =
+//                    mEDSDao.getAllDatasets();
+//            mAppExecutors.mainThread().execute(() ->
+//                    datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
+//            );
+//        });
+//    }
+//
+//    @Override
+//    public void getAutofillDataset(List<String> allAutofillHints, String datasetName,
+//            DataCallback<DatasetWithFilledAutofillFields> datasetsCallback) {
+//        mAppExecutors.diskIO().execute(() -> {
+//            // Room does not support TypeConverters for collections.
+//            List<DatasetWithFilledAutofillFields> autofillDatasetFields =
+//                    mEDSDao.getDatasetsWithName(allAutofillHints, datasetName);
+//            if (autofillDatasetFields != null && !autofillDatasetFields.isEmpty()) {
+//                if (autofillDatasetFields.size() > 1) {
+//                    logw("More than 1 dataset with name %s", datasetName);
+//                }
+//                DatasetWithFilledAutofillFields dataset = autofillDatasetFields.get(0);
+//
+//                mAppExecutors.mainThread().execute(() ->
+//                        datasetsCallback.onLoaded(dataset)
+//                );
+//            } else {
+//                mAppExecutors.mainThread().execute(() ->
+//                        datasetsCallback.onDataNotAvailable("No data found.")
+//                );
+//            }
+//        });
+//    }
 
 
     @Override
