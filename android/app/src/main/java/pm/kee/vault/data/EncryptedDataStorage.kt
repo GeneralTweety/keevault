@@ -40,11 +40,11 @@ class EncryptedDataStorage(private val prefs: SharedPreferences) {
         try {
             val str = prefs.getString(PREF_ENCRYPTED_STATE, null)
             val ba = str?.toByteArray(Charsets.ISO_8859_1)
-            ba?.let { plainBytes = keystore.decryptBytes(ba) } //TODO: Verify this assignment is valid syntax
+            plainBytes = ba?.let { keystore.decryptBytes(ba) }
         } catch (e: Exception) {}
     }
     private fun encryptStorage(id: String) {
-        val cipherBytes = plainBytes?.let { keystore.encryptBytes(it) } //TODO: Verify this assignment is valid syntax
+        val cipherBytes = plainBytes?.let { keystore.encryptBytes(it) }
         cipherBytes ?: return;
         with (prefs.edit()) {
             putString(PREF_KEY_ID, id)

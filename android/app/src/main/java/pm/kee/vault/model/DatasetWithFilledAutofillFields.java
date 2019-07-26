@@ -24,6 +24,8 @@ public class DatasetWithFilledAutofillFields {
 
     public List<FilledAutofillField> filledAutofillFields;
 
+    public Integer highestFieldMatchScore;
+
     public void add(FilledAutofillField filledAutofillField) {
         if (filledAutofillFields == null) {
             this.filledAutofillFields = new ArrayList<>();

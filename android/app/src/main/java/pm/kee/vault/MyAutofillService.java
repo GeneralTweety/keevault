@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import pm.kee.vault.data.AutofillDataBuilder;
-import pm.kee.vault.data.ClientAutofillDataBuilder;
+//import pm.kee.vault.data.ClientAutofillDataBuilder;
 import pm.kee.vault.data.ClientViewMetadata;
 import pm.kee.vault.data.ClientViewMetadataBuilder;
 import pm.kee.vault.data.DataCallback;
@@ -184,39 +184,40 @@ public class MyAutofillService extends AutofillService {
 
     @Override
     public void onSaveRequest(@NonNull SaveRequest request, @NonNull SaveCallback callback) {
-        List<FillContext> fillContexts = request.getFillContexts();
-        List<AssistStructure> structures =
-                fillContexts.stream().map(FillContext::getStructure).collect(toList());
-        AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
-        ClientParser parser = new ClientParser(structures);
-        mESPAutofillDataSource.getFieldTypeByAutofillHints(
-                new DataCallback<HashMap<String, FieldTypeWithHints>>() {
-                    @Override
-                    public void onLoaded(
-                            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
-                        mAutofillDataBuilder = new ClientAutofillDataBuilder(
-                                fieldTypesByAutofillHint, getPackageName(), parser);
-                        ClientViewMetadataBuilder clientViewMetadataBuilder =
-                                new ClientViewMetadataBuilder(parser, fieldTypesByAutofillHint);
-                        mClientViewMetadata = clientViewMetadataBuilder.buildClientViewMetadata();
-                        String packageName = latestStructure.getActivityComponent().getPackageName();
-                        if (!mPackageVerificationRepository.putPackageSignatures(packageName)) {
-                            callback.onFailure(getString(R.string.invalid_package_signature));
-                            return;
-                        }
-                        if (logVerboseEnabled()) {
-                            logv("onSaveRequest(): clientState=%s",
-                                    bundleToString(request.getClientState()));
-                        }
-                        dumpStructure(latestStructure);
-                        checkWebDomainAndBuildAutofillData(packageName, callback);
-                    }
-
-                    @Override
-                    public void onDataNotAvailable(String msg, Object... params) {
-                        loge("Should not happen - could not find field types.");
-                    }
-                });
+        callback.onFailure("saving not implemented in Kee Vault N yet");
+//        List<FillContext> fillContexts = request.getFillContexts();
+//        List<AssistStructure> structures =
+//                fillContexts.stream().map(FillContext::getStructure).collect(toList());
+//        AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
+//        ClientParser parser = new ClientParser(structures);
+//        mESPAutofillDataSource.getFieldTypeByAutofillHints(
+//                new DataCallback<HashMap<String, FieldTypeWithHints>>() {
+//                    @Override
+//                    public void onLoaded(
+//                            HashMap<String, FieldTypeWithHints> fieldTypesByAutofillHint) {
+//                        mAutofillDataBuilder = new ClientAutofillDataBuilder(
+//                                fieldTypesByAutofillHint, getPackageName(), parser);
+//                        ClientViewMetadataBuilder clientViewMetadataBuilder =
+//                                new ClientViewMetadataBuilder(parser, fieldTypesByAutofillHint);
+//                        mClientViewMetadata = clientViewMetadataBuilder.buildClientViewMetadata();
+//                        String packageName = latestStructure.getActivityComponent().getPackageName();
+//                        if (!mPackageVerificationRepository.putPackageSignatures(packageName)) {
+//                            callback.onFailure(getString(R.string.invalid_package_signature));
+//                            return;
+//                        }
+//                        if (logVerboseEnabled()) {
+//                            logv("onSaveRequest(): clientState=%s",
+//                                    bundleToString(request.getClientState()));
+//                        }
+//                        dumpStructure(latestStructure);
+//                        checkWebDomainAndBuildAutofillData(packageName, callback);
+//                    }
+//
+//                    @Override
+//                    public void onDataNotAvailable(String msg, Object... params) {
+//                        loge("Should not happen - could not find field types.");
+//                    }
+//                });
     }
 
     private void checkWebDomainAndBuildAutofillData(String packageName, SaveCallback callback) {

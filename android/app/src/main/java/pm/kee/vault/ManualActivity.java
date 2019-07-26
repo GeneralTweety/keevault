@@ -144,11 +144,11 @@ public class ManualActivity extends AppCompatActivity {
     private void onFieldSelected(FilledAutofillField field, FieldType fieldType) {
         DatasetWithFilledAutofillFields datasetWithFilledAutofillFields = new DatasetWithFilledAutofillFields();
         String newDatasetId = UUID.randomUUID().toString();
-        FilledAutofillField copyOfField = new FilledAutofillField(newDatasetId,
+        FilledAutofillField copyOfField = new FilledAutofillField(field.getAutofillId(), newDatasetId,
                 field.getFieldTypeName(), field.getTextValue(), field.getDateValue(),
                 field.getToggleValue());
         String datasetName = "dataset-manual";
-        AutofillDataset autofillDataset = new AutofillDataset(newDatasetId, datasetName, mPackageName);
+        AutofillDataset autofillDataset = new AutofillDataset(newDatasetId, 0, datasetName, mPackageName);
         datasetWithFilledAutofillFields.filledAutofillFields = ImmutableList.of(copyOfField);
         datasetWithFilledAutofillFields.autofillDataset = autofillDataset;
         Intent intent = getIntent();

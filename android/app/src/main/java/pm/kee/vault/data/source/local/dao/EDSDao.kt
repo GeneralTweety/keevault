@@ -98,7 +98,7 @@ class EDSDao(private val eds: EncryptedDataStorage) {
         var gson = Gson()
         val json = eds.getJSON()
         var model = gson.fromJson(json, KeeVaultState::class.java)
-        val matchedEntries = listOf(model.vault?.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs, whether we know it should be https, and configs to produce list
+        val matchedEntries = listOf(model.vault.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs, whether we know it should be https, and configs to produce list
         return matchedEntries
     }
 //

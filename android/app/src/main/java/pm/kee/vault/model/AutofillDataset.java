@@ -23,11 +23,14 @@ public class AutofillDataset {
 
     private final String mPackageName;
 
-    public AutofillDataset(String id, String datasetName,
+    private final Integer mScore;
+
+    public AutofillDataset(String id, Integer score, String datasetName,
                            String packageName) {
         mId = id;
         mDatasetName = datasetName;
         mPackageName = packageName;
+        mScore = score;
     }
 
     public String getId() {
@@ -40,6 +43,10 @@ public class AutofillDataset {
 
     public String getPackageName() {
         return mPackageName;
+    }
+
+    public Integer getScore() {
+        return mScore;
     }
 
     @Override

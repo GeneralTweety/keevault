@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import pm.kee.vault.ClientParser;
 import pm.kee.vault.model.ClientField;
@@ -65,16 +66,16 @@ public class ClientViewMetadataBuilder {
         StringBuilder webDomainBuilder = new StringBuilder();
         List<AutofillId> focusedAutofillIds = new ArrayList<>();
         List<ClientField> clientFields = new ArrayList<>();
-        Boolean isHTTPS = null;
+        AtomicBoolean isHTTPS = new AtomicBoolean();
         mClientParser.parse((node) -> parseNode(node, allHints, saveType, autofillIds, focusedAutofillIds, clientFields));
         mClientParser.parse((node) -> parseWebDomain(node, webDomainBuilder, isHTTPS));
         String webDomain = webDomainBuilder.toString();
         AutofillId[] autofillIdsArray = autofillIds.toArray(new AutofillId[autofillIds.size()]);
         AutofillId[] focusedIds = focusedAutofillIds.toArray(new AutofillId[focusedAutofillIds.size()]);
-        return new ClientViewMetadata(allHints, saveType.value, autofillIdsArray, focusedIds, webDomain, clientFields, isHTTPS);
+        return new ClientViewMetadata(allHints, saveType.value, autofillIdsArray, focusedIds, webDomain, clientFields, isHTTPS.get());
     }
 
-    private void parseWebDomain(AssistStructure.ViewNode viewNode, StringBuilder validWebDomain, Boolean isHTTPS) {
+    private void parseWebDomain(AssistStructure.ViewNode viewNode, StringBuilder validWebDomain, AtomicBoolean isHTTPS) {
         String webDomain = viewNode.getWebDomain();
         if (webDomain != null) {
             logd("child web domain: %s", webDomain);
@@ -88,7 +89,7 @@ public class ClientViewMetadataBuilder {
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                isHTTPS = viewNode.getWebScheme().equals("https") ? true : false;
+                isHTTPS.set(viewNode.getWebScheme().equals("https") ? true : false);
             }
 
         }
@@ -114,7 +115,7 @@ public class ClientViewMetadataBuilder {
         String htmlAutocomplete;
         ViewStructure.HtmlInfo htmlInfo = node.getHtmlInfo();
         if (htmlInfo != null) {
-            if (htmlInfo.getTag() != "input") return; //TODO: support SELECT and maybe others?
+            if (!htmlInfo.getTag().equals("input")) return; //TODO: support SELECT and maybe others?
             List<Pair<String, String>> attrs = htmlInfo.getAttributes();
             for (Pair<String, String> p : attrs) {
                 switch (p.first) {

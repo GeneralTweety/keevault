@@ -15,6 +15,8 @@
  */
 package pm.kee.vault.model;
 
+import android.view.autofill.AutofillId;
+
 public class FilledAutofillField {
 
     private final String mDatasetId;
@@ -27,7 +29,9 @@ public class FilledAutofillField {
 
     private final String mFieldTypeName;
 
-    public FilledAutofillField(String datasetId, String fieldTypeName,
+    private final AutofillId mAutofillId;
+
+    public FilledAutofillField(AutofillId autofillId, String datasetId, String fieldTypeName,
                                String textValue, Long dateValue,
                                Boolean toggleValue) {
         mDatasetId = datasetId;
@@ -35,30 +39,31 @@ public class FilledAutofillField {
         mTextValue = textValue;
         mDateValue = dateValue;
         mToggleValue = toggleValue;
+        mAutofillId = autofillId;
     }
 
-    public FilledAutofillField(String datasetId,
+    public FilledAutofillField(AutofillId autofillId, String datasetId,
             String fieldTypeName, String textValue, Long dateValue) {
-        this(datasetId, fieldTypeName, textValue, dateValue, null);
+        this(autofillId, datasetId, fieldTypeName, textValue, dateValue, null);
     }
 
-    public FilledAutofillField(String datasetId, String fieldTypeName,
+    public FilledAutofillField(AutofillId autofillId, String datasetId, String fieldTypeName,
                                String textValue) {
-        this(datasetId, fieldTypeName, textValue, null, null);
+        this(autofillId, datasetId, fieldTypeName, textValue, null, null);
     }
 
-    public FilledAutofillField(String datasetId, String fieldTypeName,
+    public FilledAutofillField(AutofillId autofillId, String datasetId, String fieldTypeName,
                                Long dateValue) {
-        this(datasetId, fieldTypeName, null, dateValue, null);
+        this(autofillId, datasetId, fieldTypeName, null, dateValue, null);
     }
 
-    public FilledAutofillField(String datasetId, String fieldTypeName,
+    public FilledAutofillField(AutofillId autofillId, String datasetId, String fieldTypeName,
                                Boolean toggleValue) {
-        this(datasetId, fieldTypeName, null, null, toggleValue);
+        this(autofillId, datasetId, fieldTypeName, null, null, toggleValue);
     }
 
-    public FilledAutofillField(String datasetId, String fieldTypeName) {
-        this(datasetId, fieldTypeName, null, null, null);
+    public FilledAutofillField(AutofillId autofillId, String datasetId, String fieldTypeName) {
+        this(autofillId, datasetId, fieldTypeName, null, null, null);
     }
 
     public String getDatasetId() {
@@ -81,6 +86,8 @@ public class FilledAutofillField {
         return mFieldTypeName;
     }
 
+    public AutofillId getAutofillId() { return mAutofillId; }
+
     public boolean isNull() {
         return mTextValue == null && mDateValue == null && mToggleValue == null;
     }
@@ -98,6 +105,8 @@ public class FilledAutofillField {
             return false;
         if (mToggleValue != null ? !mToggleValue.equals(that.mToggleValue) : that.mToggleValue != null)
             return false;
+        if (mAutofillId != null ? !mAutofillId.equals(that.mAutofillId) : that.mAutofillId != null)
+            return false;
         return mFieldTypeName.equals(that.mFieldTypeName);
     }
 
@@ -106,6 +115,7 @@ public class FilledAutofillField {
         int result = mTextValue != null ? mTextValue.hashCode() : 0;
         result = 31 * result + (mDateValue != null ? mDateValue.hashCode() : 0);
         result = 31 * result + (mToggleValue != null ? mToggleValue.hashCode() : 0);
+        result = 31 * result + (mAutofillId != null ? mAutofillId.hashCode() : 0);
         result = 31 * result + mFieldTypeName.hashCode();
         return result;
     }

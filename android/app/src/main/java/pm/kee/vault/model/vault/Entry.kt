@@ -17,6 +17,6 @@ data class Entry (
     val priority : Int? = null,
     val parent : Group? = null,
     val db : Db? = null,
-    val matchAccuracy : Int? = null, // Result of matching so always null or "None" - worthless to us
+    var matchAccuracy : Int? = null, // Result of matching so always starts as null or "None" - worthless to us until we set it
     val matchAccuracyMethod: String? = null // Domain | Hostname (post-MVP) | Exact (awaiting Android API improvements in R+)
 )

@@ -83,7 +83,7 @@ public class ESPAutofillDataSource implements AutofillDataSource {
 //                    .map(FieldType::getTypeName)
 //                    .collect(Collectors.toList());
             List<Entry> matchedEntries = mEDSDao.getMatchingEntries(clientViewMetadata.getWebDomain(), clientViewMetadata.getIsHTTPS());
-            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata);
+            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata); //TODO: Does this get called twice sometimes with duplicate ClientFields?
             mAppExecutors.mainThread().execute(() ->
                     datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
             );
