@@ -20,6 +20,7 @@ const KeeFrontend = require('kee-frontend');
 const OpenProgressReporter = require('./comp/open-progress-reporter');
 const Tip = require('./util/tip');
 const Capacitor = require('@capacitor/core');
+const NativeCache = require('./comp/nativeCache');
 
 const ready = $;
 
@@ -164,6 +165,7 @@ ready(() => {
         window.ridMatomoStartup();
         if (appModel.deviceInfo.platform === 'web') watchForUpdates();
         KPRPCHandler.init(appView);
+        NativeCache.init(KPRPCHandler);
         Backbone.trigger('app-ready');
         if (FeatureDetector.exitsOnBack()) handleBackEvents();
         if (appModel.deviceInfo.platform !== 'web') Capacitor.Plugins.SplashScreen.hide();

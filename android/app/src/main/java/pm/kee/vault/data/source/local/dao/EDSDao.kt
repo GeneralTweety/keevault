@@ -11,6 +11,7 @@ import pm.kee.vault.model.FieldType
 import pm.kee.vault.model.FieldTypeWithHints
 import pm.kee.vault.model.FilledAutofillField
 import pm.kee.vault.model.vault.Entry
+import pm.kee.vault.model.vault.Group
 import pm.kee.vault.model.vault.KeeVaultState
 
 class EDSDao(private val eds: EncryptedDataStorage) {
@@ -87,18 +88,44 @@ class EDSDao(private val eds: EncryptedDataStorage) {
                     }
                 }
         )
+//
+//    tailrec fun <A, B> fold(init: B, col: Collection<A>, f: (A, B) -> B): B = if (col.isEmpty()) init else {
+//        val head = col.take(1)[0]
+//        fold(f(head, init), col.drop(1), f)
+//    }
+//
+    private fun groupsSelector (g: Group): List<Group> = g.childGroups ?: emptyList()
+    private fun entriesSelector (g: Group): List<Entry> = g.childEntries ?: emptyList()
+    private fun entryAccumulator (list: List<Entry>, e: Entry): List<Entry> {
+        return list + e
+    }
+    private fun <T> traverse(group: Group, init: T, acc: (T, Entry) -> T): T {
+        var accumulated = entriesSelector(group).fold(init, acc)
+        groupsSelector(group).forEach { accumulated = traverse(it, accumulated, acc) }
+        return accumulated
+    }
+//            fold(init, Files.list(root).toList(),
+//                    {path, acc -> if (! group.) f(path, acc) else if (! Files.isSymbolicLink(path)) traverse(path, acc, f) else acc})
+//
+//    fun main(args: Array<String>) {
+//        val f = {path: Path, acc: String -> "$acc\n${path.toAbsolutePath()}"}
+//        val g = {path: Path, acc: Long -> acc + Files.size(path)}
+//        println(traverse(Paths.get(args[0]), "", f))
+//        println(traverse(Paths.get(args[0]), 0, g))
+//    }
 
-    /**
-     * Fetches a list of datasets associated to autofill fields on the page.
-     *
-     * @param allAutofillHints Filtering parameter; represents all of the hints associated with
-     * all of the views on the page.
-     */
     fun getMatchingEntries(url: String, isHTTPS: Boolean?): List<Entry> {
         var gson = Gson()
         val json = eds.getJSON()
         var model = gson.fromJson(json, KeeVaultState::class.java)
-        val matchedEntries = listOf(model.vault.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs, whether we know it should be https, and configs to produce list
+
+        model ?: return emptyList()
+        //val matchedEntries = model.vault.dbs!![0]?.root?.childEntries!![0]
+
+        val matchedEntries = traverse(model.vault.dbs!![0]?.root!!, ArrayList(), ::entryAccumulator)
+
+
+//        val matchedEntries = listOf(model.vault.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs, whether we know it should be https, and configs to produce list
         return matchedEntries
     }
 //

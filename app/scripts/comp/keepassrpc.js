@@ -6,6 +6,7 @@ const Backbone = require('backbone'),
     EntryModel = require('../models/entry-model'),
     PSL = require('../util/psl'),
     GeneratorPresets = require('../comp/generator-presets');
+    //     NativeCache = require('../comp/nativeCache');
 
 const logger = new Logger('kprpc');
 let app;
@@ -198,6 +199,10 @@ function launchBuiltInPasswordGenerator () {
     Backbone.trigger('show-password-generator');
 }
 
+function invokeLocalGetAllDatabases (fullDetails) {
+    return kprpc.GetAllDatabases(fullDetails);
+}
+
 const integration = {
     getGroup,
     getEntry,
@@ -253,15 +258,16 @@ const KPRPCHandler = {
                 deferPromiseResolver();
             }
         });
+        // if (appV.model.files.hasDemoFile()) {
+        //     NativeCache.update(appV.model);
+        // }
     },
     shutdown: function () {
         kprpc.shutdown();
     },
     sendServiceAccessTokens,
     applyAddonConfig,
-    invokeLocal: {
-        getAllDatabases: (fullDetails) => kprpc.GetAllDatabases(fullDetails)
-    }
+    invokeLocalGetAllDatabases
 };
 
 module.exports = KPRPCHandler;

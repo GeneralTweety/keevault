@@ -1,7 +1,10 @@
 package pm.kee.vault.data
 
 import android.content.SharedPreferences
+import android.util.Base64
+import pm.kee.vault.util.Util.loge
 import java.lang.Exception
+
 
 class EncryptedDataStorage(private val prefs: SharedPreferences) {
 
@@ -39,18 +42,108 @@ class EncryptedDataStorage(private val prefs: SharedPreferences) {
     private fun decryptStorage() {
         try {
             val str = prefs.getString(PREF_ENCRYPTED_STATE, null)
-            val ba = str?.toByteArray(Charsets.ISO_8859_1)
-            plainBytes = ba?.let { keystore.decryptBytes(ba) }
-        } catch (e: Exception) {}
+            loge("read state: $str")
+            val ba = Base64.decode(str, Base64.DEFAULT)
+
+//            val ba = str?.toByteArray(Charsets.ISO_8859_1)
+            plainBytes = null
+            ba?.let {
+//                val hack = String(ba, Charsets.ISO_8859_1)
+//                loge("re-read state: $hack")
+                var output = keystore.decryptBytes(ba)
+                plainBytes = output
+            }
+        } catch (e: Exception) {
+            loge("Exception: $e")
+        }
     }
     private fun encryptStorage(id: String) {
         val cipherBytes = plainBytes?.let { keystore.encryptBytes(it) }
         cipherBytes ?: return;
+        val str = Base64.encodeToString(cipherBytes, Base64.DEFAULT)
+//        val str = String(cipherBytes, Charsets.ISO_8859_1)
         with (prefs.edit()) {
             putString(PREF_KEY_ID, id)
-            putString(PREF_ENCRYPTED_STATE, String(cipherBytes, Charsets.ISO_8859_1))
+            putString(PREF_ENCRYPTED_STATE, str)
             commit()
         }
+        loge("write state: $str")
     }
     fun isAvailable() = (plainBytes != null)
+
+
+
+
+
+
+//
+//    private val CIPHER_CHUCK_SIZE = 64 * 1024
+//    @Throws(GeneralSecurityException::class)
+//    fun encrypt(message: ByteArray): ByteArray {
+//        val cipher = Cipher.getInstance(AES_MODE)
+//        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
+//        val parameterSpec = cipher.getParameters().getParameterSpec(GCMParameterSpec::class.java)
+//        val outLen = cipher.getOutputSize(message.size)
+//
+//        val bout = ByteArrayOutputStream()
+//        try {
+//            var i = 0
+//            while (i < message.size) {
+//                val len = Math.min(CIPHER_CHUCK_SIZE, message.size - i)
+//                bout.write(cipher.update(message, i, len))
+//                i += CIPHER_CHUCK_SIZE
+//            }
+//            bout.write(cipher.doFinal())
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//            throw GeneralSecurityException(e)
+//        }
+//
+//        val cryptedBytes = bout.toByteArray()
+//        if (outLen != cryptedBytes.size)
+//            throw GeneralSecurityException("cryptedBytes too small")
+//
+//        val iv = parameterSpec.getIV()
+//        val encryptedSecretKey = getEncryptedSecretKey()
+//        return ByteBuffer.allocate(iv.size + encryptedSecretKey.size + cryptedBytes.size)
+//                .put(iv)
+//                .put(encryptedSecretKey)
+//                .put(cryptedBytes)
+//                .array()
+//    }
+//
+//    @Throws(GeneralSecurityException::class)
+//    fun decrypt(bytes: ByteArray): ByteArray {
+//        val buffer = ByteBuffer.wrap(bytes)
+//        val iv = ByteArray(IV_SIZE)
+//        buffer.get(iv)
+//
+//        //skip aes key bytes
+//        val irrelevant = ByteArray(AES_KEY_SIZE * 8)
+//        buffer.get(irrelevant)
+//
+//        val encryptedMessage = ByteArray(bytes.size - IV_SIZE - irrelevant.size)
+//        buffer.get(encryptedMessage)
+//
+//        val cipher = Cipher.getInstance(AES_MODE)
+//        val parameterSpec = GCMParameterSpec(AES_TAG_LEN, iv)
+//        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), parameterSpec)
+//
+//        val bout = ByteArrayOutputStream()
+//        try {
+//            var i = 0
+//            while (i < encryptedMessage.size) {
+//                val len = Math.min(CIPHER_CHUCK_SIZE, encryptedMessage.size - i)
+//                cipher.update(encryptedMessage, i, len)
+//                i += CIPHER_CHUCK_SIZE
+//            }
+//            bout.write(cipher.doFinal())
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//            throw GeneralSecurityException(e)
+//        }
+//
+//        return bout.toByteArray()
+//    }
+
 }

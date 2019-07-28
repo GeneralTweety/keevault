@@ -10,14 +10,17 @@ import android.annotation.TargetApi
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import java.security.GeneralSecurityException
-import java.security.InvalidKeyException
-import java.security.Key
-import java.security.KeyStore
+import pm.kee.vault.util.Util.loge
+import java.security.*
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import android.provider.SyncStateContract.Helpers.update
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
+
 
 /**
  * Exception type thrown by {@link Keystore} when an error is encountered that
@@ -226,10 +229,37 @@ open class Keystore(
         // - inputs = [ version = 0x02 || cipher.iv (always 12 bytes) ]
         // - cipher.doFinal() provides [ ciphertext || atag ]
         val cipher = createEncryptCipher()
-        val cdata = cipher.doFinal(plain)
+
+        val byteStream = applyChunkedCipher(plain, cipher)
+
+//        val cdata = cipher.doFinal(plain)
+        val cdata = byteStream.toByteArray()
         val nonce = cipher.iv
+        val tagLength = cipher.parameters.getParameterSpec(GCMParameterSpec::class.java).tLen
+        loge("tag length: $tagLength")
+//
+//        cipher.init(Cipher.DECRYPT_MODE, getKey(), GCMParameterSpec(CIPHER_TAG_LEN, nonce))
+//        val test = cipher.doFinal(cdata)
+
 
         return byteArrayOf(ENCRYPTED_VERSION.toByte()) + nonce + cdata
+    }
+
+    private fun applyChunkedCipher(inputArray: ByteArray, cipher: Cipher): ByteArrayOutputStream {
+        val byteStream = ByteArrayOutputStream()
+        val dataStream = DataOutputStream(byteStream)
+        val plaintextStream = ByteArrayInputStream(inputArray)
+        val chunkSize = 4 * 1024
+        val buffer = ByteArray(chunkSize)
+        while (plaintextStream.available() > chunkSize) {
+            val readBytes = plaintextStream.read(buffer)
+            val ciphertextChunk = cipher.update(buffer, 0, readBytes)
+            if (ciphertextChunk != null) dataStream.write(ciphertextChunk)
+        }
+        val readBytes = plaintextStream.read(buffer)
+        val ciphertextChunk = cipher.doFinal(buffer, 0, readBytes)
+        if (ciphertextChunk != null) dataStream.write(ciphertextChunk)
+        return byteStream
     }
 
     /**
@@ -253,7 +283,9 @@ open class Keystore(
         val iv = encrypted.sliceArray(1..CIPHER_NONCE_LEN)
         val cdata = encrypted.sliceArray((CIPHER_NONCE_LEN + 1)..encrypted.size - 1)
         val cipher = createDecryptCipher(iv)
-        return cipher.doFinal(cdata)
+
+        return applyChunkedCipher(cdata, cipher).toByteArray()
+//        return cipher.doFinal(cdata)
     }
 
     /**
@@ -272,9 +304,9 @@ open class Keystore(
     @Throws(GeneralSecurityException::class)
     open fun createEncryptCipher(): Cipher {
         val key = getKey() ?: throw InvalidKeyException("unknown label: $label")
+        loge("enc key: $key")
         val cipher = Cipher.getInstance(CIPHER_SPEC)
         cipher.init(Cipher.ENCRYPT_MODE, key)
-
         return cipher
     }
 
@@ -295,6 +327,7 @@ open class Keystore(
     @Throws(GeneralSecurityException::class)
     open fun createDecryptCipher(iv: ByteArray): Cipher {
         val key = getKey() ?: throw InvalidKeyException("unknown label: $label")
+        loge("dec key: $key")
         val cipher = Cipher.getInstance(CIPHER_SPEC)
         cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(CIPHER_TAG_LEN, iv))
 

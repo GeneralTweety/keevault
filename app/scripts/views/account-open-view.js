@@ -388,18 +388,6 @@ const OpenView = Backbone.View.extend({
         this.displayOpenKeyFile();
     },
 
-    createDemo: function() {
-        if (!this.busy) {
-            this.closeConfig();
-            if (!this.model.createDemoFile()) {
-                this.trigger('close');
-            }
-            if (!this.model.settings.get('demoOpened')) {
-                this.model.settings.set('demoOpened', true);
-            }
-        }
-    },
-
     createNew: function() {
         if (!this.busy) {
             this.model.createNewFile();
