@@ -48,6 +48,7 @@ import static android.text.InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS;
 import static android.text.InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD;
 import static pm.kee.vault.util.Util.logd;
+import static pm.kee.vault.util.Util.logw;
 
 public class ClientViewMetadataBuilder {
     private ClientParser mClientParser;
@@ -67,8 +68,10 @@ public class ClientViewMetadataBuilder {
         List<AutofillId> focusedAutofillIds = new ArrayList<>();
         List<ClientField> clientFields = new ArrayList<>();
         AtomicBoolean isHTTPS = new AtomicBoolean();
+        logw("fields: " + clientFields.size());
         mClientParser.parse((node) -> parseNode(node, allHints, saveType, autofillIds, focusedAutofillIds, clientFields));
         mClientParser.parse((node) -> parseWebDomain(node, webDomainBuilder, isHTTPS));
+        logw("fields end: " + clientFields.size());
         String webDomain = webDomainBuilder.toString();
         AutofillId[] autofillIdsArray = autofillIds.toArray(new AutofillId[autofillIds.size()]);
         AutofillId[] focusedIds = focusedAutofillIds.toArray(new AutofillId[focusedAutofillIds.size()]);

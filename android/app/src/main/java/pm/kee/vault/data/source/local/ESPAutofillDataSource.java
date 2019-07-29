@@ -76,19 +76,27 @@ public class ESPAutofillDataSource implements AutofillDataSource {
 
     @Override
     public void getAutofillDatasets(ClientViewMetadata clientViewMetadata, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
-        mAppExecutors.diskIO().execute(() -> {
-//            final List<String> typeNames = getFieldTypesForAutofillHints(allAutofillHints)
-//                    .stream()
-//                    .map((u) -> u.fieldType)
-//                    .map(FieldType::getTypeName)
-//                    .collect(Collectors.toList());
-            List<Entry> matchedEntries = mEDSDao.getMatchingEntries(clientViewMetadata.getWebDomain(), clientViewMetadata.getIsHTTPS());
-            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata); //TODO: Does this get called twice sometimes with duplicate ClientFields?
-            mAppExecutors.mainThread().execute(() ->
-                    datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
-            );
-        });
+        List<Entry> matchedEntries = mEDSDao.getMatchingEntries(clientViewMetadata.getWebDomain(), clientViewMetadata.getIsHTTPS());
+        List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata); //TODO: Does this get called twice sometimes with duplicate ClientFields?
+        datasetsCallback.onLoaded(datasetsWithFilledAutofillFields);
     }
+
+//
+//    @Override
+//    public void getAutofillDatasets(ClientViewMetadata clientViewMetadata, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
+//        mAppExecutors.diskIO().execute(() -> {
+////            final List<String> typeNames = getFieldTypesForAutofillHints(allAutofillHints)
+////                    .stream()
+////                    .map((u) -> u.fieldType)
+////                    .map(FieldType::getTypeName)
+////                    .collect(Collectors.toList());
+//            List<Entry> matchedEntries = mEDSDao.getMatchingEntries(clientViewMetadata.getWebDomain(), clientViewMetadata.getIsHTTPS());
+//            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata); //TODO: Does this get called twice sometimes with duplicate ClientFields?
+//            mAppExecutors.mainThread().execute(() ->
+//                    datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
+//            );
+//        });
+//    }
 //
 //    @Override
 //    public void getAllAutofillDatasets(
@@ -164,20 +172,33 @@ public class ESPAutofillDataSource implements AutofillDataSource {
         });
     }
 
+
     @Override
     public void getFieldTypeByAutofillHints(
-            DataCallback<HashMap<String, FieldTypeWithHints>> fieldTypeMapCallback) {
-        mAppExecutors.diskIO().execute(() -> {
-            HashMap<String, FieldTypeWithHints> hintMap = getFieldTypeByAutofillHints();
-            mAppExecutors.mainThread().execute(() -> {
-                if (hintMap != null) {
-                    fieldTypeMapCallback.onLoaded(hintMap);
-                } else {
-                    fieldTypeMapCallback.onDataNotAvailable("FieldTypes not found");
-                }
-            });
-        });
+        DataCallback<HashMap<String, FieldTypeWithHints>> fieldTypeMapCallback) {
+        HashMap<String, FieldTypeWithHints> hintMap = getFieldTypeByAutofillHints();
+        if (hintMap != null) {
+            fieldTypeMapCallback.onLoaded(hintMap);
+        } else {
+            fieldTypeMapCallback.onDataNotAvailable("FieldTypes not found");
+        }
     }
+
+    //
+//    @Override
+//    public void getFieldTypeByAutofillHints(
+//            DataCallback<HashMap<String, FieldTypeWithHints>> fieldTypeMapCallback) {
+//        mAppExecutors.diskIO().execute(() -> {
+//            HashMap<String, FieldTypeWithHints> hintMap = getFieldTypeByAutofillHints();
+//            mAppExecutors.mainThread().execute(() -> {
+//                if (hintMap != null) {
+//                    fieldTypeMapCallback.onLoaded(hintMap);
+//                } else {
+//                    fieldTypeMapCallback.onDataNotAvailable("FieldTypes not found");
+//                }
+//            });
+//        });
+//    }
 
     @Override
     public void getFilledAutofillField(String datasetId, String fieldTypeName, DataCallback<FilledAutofillField> fieldCallback) {

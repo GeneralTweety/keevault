@@ -87,15 +87,23 @@ public class MyAutofillService extends AutofillService {
     @Override
     public void onFillRequest(@NonNull FillRequest request,
                               @NonNull CancellationSignal cancellationSignal, @NonNull FillCallback callback) {
+
+        // Note that callback.onFailure should NEVER be called until we remove support for Android P and
+        // earlier. This is due to an unspecified bug documented at:
+        // https://developer.android.com/reference/android/service/autofill/FillCallback.html#onFailure(java.lang.CharSequence)
+
         ApplicationInfo appInfo = getApplicationInfo();
         List<FillContext> fillContexts = request.getFillContexts();
-        List<AssistStructure> structures =
-                fillContexts.stream().map(FillContext::getStructure).collect(toList());
+
+        // No idea why the sample code tries to parse every structure - might be missing something relating to saving though?
+//        List<AssistStructure> structures =
+//                fillContexts.stream().map(FillContext::getStructure).collect(toList());
+
         AssistStructure latestStructure = fillContexts.get(fillContexts.size() - 1).getStructure();
-        ClientParser parser = new ClientParser(structures);
+        ClientParser parser = new ClientParser(latestStructure);
         String packageName = latestStructure.getActivityComponent().getPackageName();
         if (packageName.equals(appInfo.packageName)) {
-            callback.onFailure("Can't auto fill ourself");
+            callback.onSuccess(null);
             return;
         }
 
@@ -115,7 +123,8 @@ public class MyAutofillService extends AutofillService {
                         mResponseAdapter = new ResponseAdapter(MyAutofillService.this,
                                 mClientViewMetadata, getPackageName(), datasetAdapter);
                         if (!mPackageVerificationRepository.putPackageSignatures(packageName)) {
-                            callback.onFailure(getString(R.string.invalid_package_signature));
+                            logw(getString(R.string.invalid_package_signature));
+                            callback.onSuccess(null);
                             return;
                         }
                         if (logVerboseEnabled()) {
@@ -132,7 +141,8 @@ public class MyAutofillService extends AutofillService {
 
                     @Override
                     public void onDataNotAvailable(String msg, Object... params) {
-
+                        loge("field type data not found");
+                        callback.onSuccess(null);
                     }
                 });
     }
@@ -176,7 +186,7 @@ public class MyAutofillService extends AutofillService {
                         @Override
                         public void onDataNotAvailable(String msg, Object... params) {
                             logw(msg, params);
-                            callback.onFailure(String.format(msg, params));
+                            callback.onSuccess(null);
                         }
                     });
         }
@@ -184,6 +194,11 @@ public class MyAutofillService extends AutofillService {
 
     @Override
     public void onSaveRequest(@NonNull SaveRequest request, @NonNull SaveCallback callback) {
+
+        // TODO: Note that callback.onFailure should NEVER be called until we remove support for Android P and
+        // earlier. This is due to an unspecified bug documented at:
+        // https://developer.android.com/reference/android/service/autofill/FillCallback.html#onFailure(java.lang.CharSequence)
+
         callback.onFailure("saving not implemented in Kee Vault N yet");
 //        List<FillContext> fillContexts = request.getFillContexts();
 //        List<AssistStructure> structures =

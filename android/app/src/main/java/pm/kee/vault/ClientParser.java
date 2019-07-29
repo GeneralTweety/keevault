@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 import static android.app.assist.AssistStructure.ViewNode;
+import static pm.kee.vault.util.Util.logw;
 
 /**
  * Wrapper for {@link AssistStructure} to make it easy to parse.
@@ -47,9 +48,13 @@ public final class ClientParser {
      * @param processor contains action to be performed on each {@link ViewNode}.
      */
     public void parse(NodeProcessor processor) {
+        logw("structures: " + mStructures.size());
         for (AssistStructure structure : mStructures) {
+            logw("parse structure");
             int nodes = structure.getWindowNodeCount();
+            logw("window nodes: " + nodes);
             for (int i = 0; i < nodes; i++) {
+                logw("parse window node");
                 AssistStructure.ViewNode viewNode = structure.getWindowNodeAt(i).getRootViewNode();
                 traverseRoot(viewNode, processor);
             }
