@@ -77,7 +77,7 @@ public class ESPAutofillDataSource implements AutofillDataSource {
     @Override
     public void getAutofillDatasets(ClientViewMetadata clientViewMetadata, DataCallback<List<DatasetWithFilledAutofillFields>> datasetsCallback) {
         List<Entry> matchedEntries = mEDSDao.getMatchingEntries(clientViewMetadata.getWebDomain(), clientViewMetadata.getIsHTTPS());
-        List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata); //TODO: Does this get called twice sometimes with duplicate ClientFields?
+        List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata);
         datasetsCallback.onLoaded(datasetsWithFilledAutofillFields);
     }
 
@@ -91,7 +91,7 @@ public class ESPAutofillDataSource implements AutofillDataSource {
 ////                    .map(FieldType::getTypeName)
 ////                    .collect(Collectors.toList());
 //            List<Entry> matchedEntries = mEDSDao.getMatchingEntries(clientViewMetadata.getWebDomain(), clientViewMetadata.getIsHTTPS());
-//            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata); //TODO: Does this get called twice sometimes with duplicate ClientFields?
+//            List<DatasetWithFilledAutofillFields> datasetsWithFilledAutofillFields = matchFields(matchedEntries, clientViewMetadata);
 //            mAppExecutors.mainThread().execute(() ->
 //                    datasetsCallback.onLoaded(datasetsWithFilledAutofillFields)
 //            );

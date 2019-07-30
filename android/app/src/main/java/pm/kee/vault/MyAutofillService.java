@@ -15,8 +15,10 @@
  */
 package pm.kee.vault;
 
+import android.app.PendingIntent;
 import android.app.assist.AssistStructure;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
@@ -57,6 +59,7 @@ import pm.kee.vault.util.AppExecutors;
 import pm.kee.vault.util.SecurityHelper;
 import pm.kee.vault.util.Util;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static java.util.stream.Collectors.toList;
 import static pm.kee.vault.util.Util.bundleToString;
 import static pm.kee.vault.util.Util.dumpStructure;
@@ -161,34 +164,54 @@ public class MyAutofillService extends AutofillService {
                 callback.onSuccess(response);
             }
         } else {
-            mESPAutofillDataSource.getAutofillDatasets(mClientViewMetadata,
-                    new DataCallback<List<DatasetWithFilledAutofillFields>>() {
-                        @Override
-                        public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
-                            if ((datasets == null || datasets.isEmpty()) && manual) {
-                                IntentSender sender = ManualActivity
-                                        .getManualIntentSenderForResponse(MyAutofillService.this);
-                                RemoteViews remoteViews = RemoteViewsHelper.viewsWithNoAuth(
-                                        getPackageName(),
-                                        getString(R.string.autofill_manual_prompt));
-                                FillResponse response = mResponseAdapter.buildManualResponse(sender,
-                                        remoteViews);
-                                if (response != null) {
+            try {
+                mESPAutofillDataSource.getAutofillDatasets(mClientViewMetadata,
+                        new DataCallback<List<DatasetWithFilledAutofillFields>>() {
+                            @Override
+                            public void onLoaded(List<DatasetWithFilledAutofillFields> datasets) {
+                                if ((datasets == null || datasets.isEmpty()) && manual) {
+                                    IntentSender sender = ManualActivity
+                                            .getManualIntentSenderForResponse(MyAutofillService.this);
+                                    RemoteViews remoteViews = RemoteViewsHelper.viewsWithNoAuth(
+                                            getPackageName(),
+                                            getString(R.string.autofill_manual_prompt));
+                                    FillResponse response = mResponseAdapter.buildManualResponse(sender,
+                                            remoteViews);
+                                    if (response != null) {
+                                        callback.onSuccess(response);
+                                    }
+                                } else {
+                                    FillResponse response = mResponseAdapter.buildResponse(
+                                            fieldTypesByAutofillHint, datasets, datasetAuth);
                                     callback.onSuccess(response);
                                 }
-                            } else {
-                                FillResponse response = mResponseAdapter.buildResponse(
-                                        fieldTypesByAutofillHint, datasets, datasetAuth);
-                                callback.onSuccess(response);
                             }
-                        }
 
-                        @Override
-                        public void onDataNotAvailable(String msg, Object... params) {
-                            logw(msg, params);
-                            callback.onSuccess(null);
-                        }
-                    });
+                            @Override
+                            public void onDataNotAvailable(String msg, Object... params) {
+                                logw(msg, params);
+                                callback.onSuccess(null);
+                            }
+                        });
+            } catch (SecurityException se) {
+                Context context;
+                try {
+                    context = this.createPackageContext(getPackageName(), 0);
+                } catch (PackageManager.NameNotFoundException ex) {
+                    loge("Installation failure. Our own package was not found.");
+                    return;
+                }
+                final Intent intent = new Intent(context, MainActivity.class);
+                intent.addFlags(FLAG_ACTIVITY_NEW_TASK); // Required - manifest declaration appears to be ignored - maybe Android system is modifying the intent on its way through the autofill code... dunno.
+                IntentSender sender = PendingIntent.getActivity(context, 22469524, intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT).getIntentSender();
+                RemoteViews remoteViews = RemoteViewsHelper.viewsWithAuth(getPackageName(),
+                        getString(R.string.autofill_sign_in_prompt));
+                FillResponse response = mResponseAdapter.buildResponse(sender, remoteViews);
+                if (response != null) {
+                    callback.onSuccess(response);
+                }
+            }
         }
     }
 

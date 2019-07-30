@@ -119,14 +119,12 @@ class EDSDao(private val eds: EncryptedDataStorage) {
         val json = eds.getJSON()
         var model = gson.fromJson(json, KeeVaultState::class.java)
 
+//        model ?: throw SecurityException()
         model ?: return emptyList()
-        //val matchedEntries = model.vault.dbs!![0]?.root?.childEntries!![0]
+        if (model.config.expiry <= System.currentTimeMillis()) throw SecurityException("expired")
 
-        val matchedEntries = traverse(model.vault.dbs!![0]?.root!!, ArrayList(), ::entryAccumulator)
-
-
-//        val matchedEntries = listOf(model.vault.dbs!![0]?.root?.childEntries!![0]) //TODO: filter recursively and consider URLs, whether we know it should be https, and configs to produce list
-        return matchedEntries
+        //TODO: consider URLs, whether we know it should be https, and configs to produce list
+        return traverse(model.vault.dbs!![0]?.root!!, ArrayList(), ::entryAccumulator)
     }
 //
 //    /**

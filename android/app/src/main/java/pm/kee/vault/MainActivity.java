@@ -11,6 +11,8 @@ import java.util.ArrayList;
 
 import pm.kee.vault.capacitor.NativeCache;
 
+import static pm.kee.vault.util.Util.loge;
+
 public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
