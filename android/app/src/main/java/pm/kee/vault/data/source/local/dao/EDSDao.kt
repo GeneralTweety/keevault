@@ -13,6 +13,7 @@ import pm.kee.vault.model.FilledAutofillField
 import pm.kee.vault.model.vault.Entry
 import pm.kee.vault.model.vault.Group
 import pm.kee.vault.model.vault.KeeVaultState
+import pm.kee.vault.model.vault.Vault
 
 class EDSDao(private val eds: EncryptedDataStorage) {
 
@@ -115,16 +116,20 @@ class EDSDao(private val eds: EncryptedDataStorage) {
 //    }
 
     fun getMatchingEntries(url: String, isHTTPS: Boolean?): List<Entry> {
-        var gson = Gson()
-        val json = eds.getJSON()
-        var model = gson.fromJson(json, KeeVaultState::class.java)
+        try {
+            var gson = Gson()
+            val json = eds.getString()
+            var model = gson.fromJson(json, Vault::class.java)
 
 //        model ?: throw SecurityException()
-        model ?: return emptyList()
-        if (model.config.expiry <= System.currentTimeMillis()) throw SecurityException("expired")
+            model ?: return emptyList()
+//        if (model.config.expiry <= System.currentTimeMillis()) throw SecurityException("expired")
 
-        //TODO: consider URLs, whether we know it should be https, and configs to produce list
-        return traverse(model.vault.dbs!![0]?.root!!, ArrayList(), ::entryAccumulator)
+            //TODO: consider URLs, whether we know it should be https, and configs to produce list
+            return traverse(model.dbs!![0]?.root!!, ArrayList(), ::entryAccumulator)
+        } catch (e: Exception) {
+            throw SecurityException("error", e)
+        }
     }
 //
 //    /**

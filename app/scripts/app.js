@@ -21,6 +21,7 @@ const OpenProgressReporter = require('./comp/open-progress-reporter');
 const Tip = require('./util/tip');
 const Capacitor = require('@capacitor/core');
 const NativeCache = require('./comp/nativeCache');
+const NativeConfig = require('./comp/nativeConfig');
 
 const ready = $;
 
@@ -69,6 +70,7 @@ ready(() => {
 
     function loadConfigs() {
         return Promise.all([
+            NativeConfig.init(),
             AppSettingsModel.instance.load(),
             UpdateModel.instance.load(),
             RuntimeDataModel.instance.load()

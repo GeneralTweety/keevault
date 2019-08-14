@@ -36,9 +36,11 @@ import androidx.annotation.NonNull;
 
 import android.widget.RemoteViews;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import pm.kee.vault.data.AccessRestrictions;
 import pm.kee.vault.data.AutofillDataBuilder;
 //import pm.kee.vault.data.ClientAutofillDataBuilder;
 import pm.kee.vault.data.ClientViewMetadata;
@@ -203,6 +205,7 @@ public class MyAutofillService extends AutofillService {
                 }
                 final Intent intent = new Intent(context, MainActivity.class);
                 intent.addFlags(FLAG_ACTIVITY_NEW_TASK); // Required - manifest declaration appears to be ignored - maybe Android system is modifying the intent on its way through the autofill code... dunno.
+                intent.putExtra("autofill", true);
                 IntentSender sender = PendingIntent.getActivity(context, 22469524, intent,
                         PendingIntent.FLAG_UPDATE_CURRENT).getIntentSender();
                 RemoteViews remoteViews = RemoteViewsHelper.viewsWithAuth(getPackageName(),
@@ -309,7 +312,9 @@ public class MyAutofillService extends AutofillService {
         // as a different vault user since this native Kee Vault app service was last created
         SharedPreferences localAfDataSourceSharedPrefs =
                 getSharedPreferences(ESPAutofillDataSource.SHARED_PREF_KEY, Context.MODE_PRIVATE);
-        EncryptedDataStorage storage = new EncryptedDataStorage(localAfDataSourceSharedPrefs);
+        EncryptedDataStorage storage = new EncryptedDataStorage("cache",
+                new AccessRestrictions(new Date(), true, -1),
+                localAfDataSourceSharedPrefs);
         mESPAutofillDataSource = ESPAutofillDataSource.getInstance(storage,
                 new AppExecutors());
     }

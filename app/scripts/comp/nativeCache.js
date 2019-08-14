@@ -19,9 +19,15 @@ NativeCacheClass.prototype.mapModel = async function(model) {
     const state = {
         id,
         config: {
-            expiry: 12345,
-            requireFullKey: false
-            // actual hashes of mini-keys "last 5 chars, etc." can be sent separately I think?
+            cache: {
+                expiry: 180,
+                authPresenceLimit: 30
+            },
+            auth: {
+                expiry: 300,
+                interactiveExpiry: 900,
+                secretKey: 'base64encodedblah'
+            }
         },
         vault: await this.KPRPCHandler.invokeLocalGetAllDatabases(true)
     };
